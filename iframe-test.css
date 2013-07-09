@@ -1,0 +1,28 @@
+#testDiv img {
+	width: 200px;
+	height: 200px;
+}
+
+iframe {
+	border: 2px solid black;
+	position: relative;
+	top: -472px;
+	left: -375px;
+	z-index: 1;
+
+}
+
+.iframe {
+	width: 250px;
+	height: 187.5px;
+	position: relative;
+	float: left;
+}
+
+.overlay {
+	width: 250px;
+	height: 187.5px;
+
+	position: relative;
+	z-index: 9000;
+}
