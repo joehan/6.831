@@ -4,7 +4,7 @@
     <title>Google Spreadsheet Javascript</title> 
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
    
-    <script src='getData.js'></script>
+    <script src='getCellsData.js'></script>
     <style>
       body{
         background-color: white;
@@ -25,7 +25,7 @@
     Here is the most basic usage:
     <pre id='code'></pre>
     And here are the results:
-    <pre id='results'></pre>
+    <h6 class='results'></h6>
     <div id='links'>
       Github URL: <a href='https://github.com/mikeymckay/google-spreadsheet-javascript'>https://github.com/mikeymckay/google-spreadsheet-javascript</a><br/>
       Source URL for above spreadsheet data: <span id='spreadsheet_url'></span><br/>
@@ -34,7 +34,7 @@
       <input onclick='document.location = document.location.pathname + "?url="+$("input[name]").val()' type='submit'></input>
     </div>
     <iframe width='500' height='300' frameborder='0' ></iframe>
-    <script src='getData.js'></script>
+    <script src='getCellsData.js'></script>
       
   </body>
 </html>

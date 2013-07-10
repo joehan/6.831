@@ -1,6 +1,5 @@
 var items = {};
-
-var getRowContents = function(){    $.getJSON('https://spreadsheets.google.com/feeds/list/0AgtGE4FgUNk1dERRcF9RTU91OU5KQzVjTzdiQjJkOEE/od6/public/basic?alt=json', function(data) {
+  $.getJSON('https://spreadsheets.google.com/feeds/list/0AgtGE4FgUNk1dERRcF9RTU91OU5KQzVjTzdiQjJkOEE/od6/public/basic?alt=json', function(data) {
       var items = {};
       for (i=0;i<data.feed.entry.length;i++){
           var valuesString = data.feed.entry[i].content.$t
@@ -19,7 +18,7 @@ var getRowContents = function(){    $.getJSON('https://spreadsheets.google.com/f
     return items
       
     });
-}
+
 
 
 var parseInfo = function(infoArrayString){
