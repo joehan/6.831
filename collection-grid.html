@@ -8,18 +8,29 @@
 <script type="text/javascript" src="collection-grid.js"></script> 
 <script type="text/javascript">
   $(document).ready(function() {
- 	$('#sortable1').sortable({
- 		connectWith: ".connected2"
-	 }).disableSelection();
- 	$('#sortable2').sortable({
- 		connectWith: ".connected1"
-	 }).disableSelection();
+ 	$('#sortable-main').sortable({
+ 	}).disableSelection();
  });
 </script> 
 <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
 <link href="iframe-test.css" rel="stylesheet"></link>  
 </head>
 <body style="padding-top: 40px;">
+	
+	<!-- Modal -->
+	<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	  <div class="modal-header">
+	    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+	    <h3 id="myModalLabel">Modal header</h3>
+	  </div>
+	  <div class="modal-body">
+	  </div>
+	  <div class="modal-footer">
+	    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+	    <button class="btn btn-primary">Save changes</button>
+	  </div>
+	</div>
+
 	<div class="container-fluid">
 		
 		<div class="navbar navbar-fixed-top navbar-inverse">
@@ -38,14 +49,20 @@
 		<div class="row-fluid">
 
 			<div class="span9 main-grouping">
-				<ul id="sortable1" class="connected1">
+				<ul id="sortable-main" class="connected-main">
   				</ul>
 			</div>
 			
 			<div class="span3 select-grouping">
-				<div class="description"><h1>Text Here<h1></div>
-				<ul id="sortable2"class="connected2">
-				<ul>
+				<div class="description"><button class="btn new-collection">New Collection</button><button class="btn delete-collection">Delete Collection</button></div>
+				<div class="collection-name">
+						<input type="text" class="collection-name-input"></input><button class="btn name-submit">Submit</button>
+					</div>
+					
+				<div class="tabbable">
+					<ul class="nav nav-tabs collections"></ul>
+					<div class="collections-content tab-content"></div>
+				</div>
 			</div>
 
 		</div>
