@@ -50,7 +50,7 @@ function getEverything(){
     var removeDupes = function(){
         testList = []
         for (i=0;i<URLList.length;i++){
-            if (testList.indexOf(URLList[i])=-1)
+            if (testList.indexOf(URLList[i])==-1)
                 testList.push(URLList[i])
         }
         console.log(testList)
