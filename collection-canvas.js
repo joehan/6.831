@@ -51,11 +51,18 @@ function getEverything(){
         var testList = []
         for (i=0;i<URLList.length;i++){
             if (testList.indexOf(URLList[i])==-1)
-                testList.push(URLList[i])
+                testList.push(addProtocol(URLList[i]))
         }
         console.log(testList)
         URLList=testList
     }
+    
+    var addProtocol = function(URL){
+        if (URL.slice(0,4)!= 'http'){
+            URL = 'http://'+URL
+        }
+        return URL
+}
     
 return {'getValues':getValues, 'parseData':parseData, 'findURLColumn':findURLColumn, 'getURLList':getURLList}
 }
