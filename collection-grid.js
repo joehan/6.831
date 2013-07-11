@@ -71,7 +71,7 @@ var iframeMaker = (function() {
 		for (i=1;i<URLList.length;i++) {
 			var li = $('<li class = "iframe ui-state-default">')
 			var overlay = $('<div class="overlay"></div>')
-			var iframe = $('<iframe sandbox="" width="1000" height="750" src='+URLList[i]+' style="-webkit-transform:scale(0.24);-moz-transform-scale(0.25);">')
+			var iframe = $('<iframe class="body-iframe" sandbox="" width="1000" height="750" src='+URLList[i]+' style="-webkit-transform:scale(0.24);-moz-transform-scale(0.25);">')
 			// var buttons = $('<div class="buttons"><button class="one">1</button><button class="two">2</button><button class="three">3</button></div>')
 			// overlay.append(buttons)
 			li.append(overlay, iframe)
@@ -89,7 +89,7 @@ $.getJSON( 'https://spreadsheets.google.com/feeds/cells/0AgtGE4FgUNk1dERRcF9RTU9
         JSONdata=data
     }).done(function(){getEverything().getURLList();
                        console.log(items);
-                       $("#sortable").each(function() {
+                       $("#sortable1").each(function() {
 		                      iframeMaker.setup($(this));
 	                   })
                       })

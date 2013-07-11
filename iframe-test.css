@@ -3,7 +3,7 @@
 	height: 200px;
 }
 
-iframe {
+.body-iframe {
 	border: 2px solid black;
 	position: relative;
 	top: -472px;
@@ -12,7 +12,17 @@ iframe {
 
 }
 
+.modal-iframe {
+	border: 2px solid black;
+	position: relative;
+	top: -272px;
+	left: -375px;
+	z-index: 1;
+
+}
+
 .iframe {
+	overflow: hidden;
 	width: 250px;
 	height: 187.5px;
 	position: relative;
@@ -25,4 +35,47 @@ iframe {
 
 	position: relative;
 	z-index: 9000;
+}
+
+.buttons {
+	position: relative;
+	margin: 5px;
+	z-index: 18000;
+}
+
+#sortable2 {
+	height: 640px;
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+#sortable1 {
+	height: 700px;
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+#draggable-holder {
+	height: 700px;
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+.description {
+	text-align: center;
+}
+
+.main-grouping {
+	border: 5px solid black;
+}
+
+.select-grouping {
+	border: 5px solid black;
+}
+
+.space {
+	height: 40px;
+}
+
+#myModal {
+	z-index: 200000;
 }
