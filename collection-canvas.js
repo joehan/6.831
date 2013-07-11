@@ -48,7 +48,7 @@ function getEverything(){
     }
     
     var removeDupes = function(){
-        testList = []
+        var testList = []
         for (i=0;i<URLList.length;i++){
             if (testList.indexOf(URLList[i])==-1)
                 testList.push(URLList[i])
@@ -72,11 +72,12 @@ var iframeMaker = (function() {
 
     var URL = "'"+$($($($($(this)).parent()).parent()).find('iframe')).attr("src")+"'";
     console.log(URL)
+    var iframeDiv = $('<div class="modal-iframe-holder"></div>')
     var modalIframe = $('<iframe class="modal-iframe" sandbox="" width="1000" height="750" src='+URL+' style="-webkit-transform:scale(0.5);-moz-transform-scale(0.5);">')
     var URLbutton = $('<button class="btn btn-primary" onclick="window.open('+URL+');">Visit Site</button>')
     var closeButton = $('<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>')
-    
-    $('.modal-body').append(modalIframe)
+    iframeDiv.append(modalIframe)
+    $('.modal-body').append(iframeDiv)
     $('.modal-footer').append(closeButton, URLbutton)
   }
 

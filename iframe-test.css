@@ -21,6 +21,12 @@
 
 }
 
+.modal-iframe-holder {
+	width:500px;
+	height: 375px;
+	overflow: hidden;
+}
+
 .iframe {
 	overflow: hidden;
 	width: 250px;
