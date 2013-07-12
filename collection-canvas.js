@@ -1,6 +1,7 @@
 var items = {}
 var valueHolder
 var URLList = []
+var URLDict = {}
                        
 //getEverything is called after the JSON data is recieved. It interprets the JSON data, and is used to generate the URLs that will  be displayed.                       
 function getEverything(){
@@ -85,7 +86,38 @@ function getEverything(){
     }
 
     
-    return {'getValues':getValues, 'parseData':parseData, 'findColumn':findColumn, 'getURLList':getURLList, 'getComments':getComments}
+    
+    
+    //    var makeURLDict = function(){
+//        getURLList()
+//        for (var i=0; i<URLList.length;i++){
+//            URLDict[URLList[i]]=[]
+//            for (key in items){
+//                if (items[key][getColumn('URL')] == URLList[i]){
+//                    URLDict[URLList[i]].push()
+//                }
+//                
+//            }
+//        }
+//        
+//    }
+    var makeURLDict = function(){
+        parseData()
+        for (var key in items){
+            var newKey = items[key][findColumn('URL')]
+            if (URLDict[newKey]==undefined){
+                URLDict[newKey]=[items[key].slice(0,((items[key].length)/2))]
+            }
+            else{
+                 URLDict[newKey].push(items[key].slice(0,((items[key].length)/2)-1))
+            }
+            
+        }
+    }
+                                    
+                                    
+    
+    return {'getValues':getValues, 'parseData':parseData, 'findColumn':findColumn, 'getURLList':getURLList, 'getComments':getComments, 'makeURLDict':makeURLDict}
 }
 
 
