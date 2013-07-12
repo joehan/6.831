@@ -74,10 +74,18 @@ var showNamePrompt = function() {
   var maxCollections = 4;
   var numCollections = $('.collections').children().length;
 
-  if (numCollections <= maxCollections) {
-    $('.collection-name').css("visibility", "visible");
-  } 
+  if ($(".collection-name").css("visibility") == "visible") {
 
+      $(".collection-name").css("visibility", "hidden");
+
+  } else {
+
+      if (numCollections <= maxCollections) {
+
+        $('.collection-name').css("visibility", "visible");
+
+      } 
+  }
 }
 
 var createCollection = function() {
@@ -88,8 +96,8 @@ var createCollection = function() {
   $('.collection-name-input').val("")
   $('.collection-name').css("visibility", "hidden");
 
-  newTab = $('<li><a href=#'+collectionName+' data-toggle="tab">'+collectionName+'</a></li)');
-  newTabBody = $('<div id='+collectionName+' class="tab-pane">this is the '+collectionName+' tab</div>')
+  newTab = $('<li><a class='+collectionName+' href=#'+collectionName+' data-toggle="tab">'+collectionName+'</a></li)');
+  newTabBody = $('<div id='+collectionName+' class="tab-pane"></div>')
   newSortable = $('<ul id="sortable'+collectionNumber+'" class="connected'+collectionNumber+' group"></ul>')
   newTabBody.append(newSortable);
 
@@ -106,6 +114,13 @@ var createCollection = function() {
 }
 
 var deleteCollection = function() {
+  var activeTab = $('.collections .active').text();
+  if (activeTab !== "") {
+    var collectedIframes = $($(document.getElementById(activeTab)).children()).children();
+    $('#sortable-main').append(collectedIframes);
+    $($(document.getElementById(activeTab)).children()).remove();
+    $("."+activeTab).remove()
+  } 
 
 }
 
@@ -161,6 +176,7 @@ $.getJSON( 'https://spreadsheets.google.com/feeds/cells/0AgtGE4FgUNk1dERRcF9RTU9
 		                      iframeMaker.setup($(this));
 	                   })
                        $('.new-collection').on("click", showNamePrompt)
+                       $('.delete-collection').on("click", deleteCollection)
                         $('.name-submit').on("click", createCollection)
                         $('.collection-name-input').keydown(function(event){
                           if(event.keyCode == 13) {

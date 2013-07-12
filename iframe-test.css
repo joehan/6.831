@@ -63,6 +63,7 @@
 	height: 640px;
 	overflow-x: hidden;
 	overflow-y: scroll;
+	margin-left: 0px;
 }
 
 #sortable-main {
@@ -88,7 +89,7 @@
 	height: 720px;
 	border: 5px solid black;
 	overflow-x: hidden;
-	overflow-y: scroll;
+	overflow-y: hidden;
 }
 
 .space {
