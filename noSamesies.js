@@ -17,9 +17,9 @@ var addProtocol = function(URL){
 }
 var getSpreadsheetInfo = function(URL){
     var infoList = []
-    for (i=1; i<=items.length;i++){
-        if (items[i]['URL'] == URL){
-            commentsList.push(items[i])
+    for (for key in items){
+        if (items[key][getEverything.findURLColumn()] == URL){
+            infoList.push(items[i])
         }
             
     }
