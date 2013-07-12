@@ -8,11 +8,6 @@
 	visibility: hidden;
 }
 
-#testDiv img {
-	width: 200px;
-	height: 200px;
-}
-
 .body-iframe {
 	border: 2px solid black;
 	position: relative;
@@ -53,12 +48,6 @@
 	z-index: 9000;
 }
 
-.buttons {
-	position: relative;
-	margin: 5px;
-	z-index: 18000;
-}
-
 .group {
 	height: 640px;
 	overflow-x: hidden;
@@ -72,11 +61,6 @@
 	overflow-y: scroll;
 }
 
-#draggable-holder {
-	height: 700px;
-	overflow-x: hidden;
-	overflow-y: scroll;
-}
 .description {
 	text-align: center;
 }
