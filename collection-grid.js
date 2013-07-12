@@ -8,7 +8,6 @@ function getEverything(){
     var getValues = function(){
         
         var values = JSONdata.feed.entry
-        console.log(values)
         valueHolder= values
         return values
               
@@ -19,7 +18,6 @@ function getEverything(){
         getValues()
         for (i=0;i<valueHolder.length;i++){
                       var rowNumber = valueHolder[i].title.$t.slice(1)
-                      console.log(rowNumber)
                       if (items[rowNumber] == undefined){
                           items[rowNumber] = [valueHolder[i].content.$t]
                       }
@@ -28,7 +26,6 @@ function getEverything(){
                       }
                       
                   }
-                console.log(items)
     }
     
     
@@ -55,7 +52,6 @@ function getEverything(){
             if (testList.indexOf(URLList[i])==-1)
                 testList.push(addProtocol(URLList[i]))
         }
-        console.log(testList)
         URLList=testList
     }
     
@@ -88,28 +84,33 @@ var showNamePrompt = function() {
   }
 }
 
+
+// to do - make it so user can only enter letters
 var createCollection = function() {
 
   collectionNumber = $('.collections').children().length;
 
   collectionName = $('.collection-name-input')[0].value;
-  $('.collection-name-input').val("")
-  $('.collection-name').css("visibility", "hidden");
+  
+  if (collectionName !== "") {
+    $('.collection-name-input').val("")
+    $('.collection-name').css("visibility", "hidden");
 
-  newTab = $('<li><a class='+collectionName+' href=#'+collectionName+' data-toggle="tab">'+collectionName+'</a></li)');
-  newTabBody = $('<div id='+collectionName+' class="tab-pane"></div>')
-  newSortable = $('<ul id="sortable'+collectionNumber+'" class="connected'+collectionNumber+' group"></ul>')
-  newTabBody.append(newSortable);
+    newTab = $('<li><a class='+collectionName+' href=#'+collectionName+' data-toggle="tab">'+collectionName+'</a></li)');
+    newTabBody = $('<div id='+collectionName+' class="tab-pane"></div>')
+    newSortable = $('<ul id="sortable'+collectionNumber+'" class="connected'+collectionNumber+' group"></ul>')
+    newTabBody.append(newSortable);
 
-  $('.collections').append(newTab);
-  $('.collections-content').append(newTabBody)
+    $('.collections').append(newTab);
+    $('.collections-content').append(newTabBody)
 
-  $('#sortable-main').sortable({
-    connectWith: ".connected"+collectionNumber,
-   }).disableSelection();
-  $('#sortable'+collectionNumber).sortable({
-    connectWith: ".connected-main"
-   }).disableSelection();
+    $('#sortable-main').sortable({
+      connectWith: ".connected"+collectionNumber,
+     }).disableSelection();
+    $('#sortable'+collectionNumber).sortable({
+      connectWith: ".connected-main"
+     }).disableSelection();
+  }
 
 }
 
@@ -119,7 +120,8 @@ var deleteCollection = function() {
     var collectedIframes = $($(document.getElementById(activeTab)).children()).children();
     $('#sortable-main').append(collectedIframes);
     $($(document.getElementById(activeTab)).children()).remove();
-    $("."+activeTab).remove()
+    $($("."+activeTab).parent()).remove();
+    $("."+activeTab).remove();
   } 
 
 }
@@ -135,7 +137,6 @@ var iframeMaker = (function() {
     $('.modal-footer').empty();
 
     var URL = "'"+$($($($($(this)).parent()).parent()).find('iframe')).attr("src")+"'";
-    console.log(URL)
     var iframeDiv = $('<div class="modal-iframe-holder"></div>')
     var modalIframe = $('<iframe class="modal-iframe" sandbox="" width="1000" height="750" src='+URL+' style="-webkit-transform:scale(0.5);-moz-transform-scale(0.5);">')
     var URLbutton = $('<button class="btn btn-primary" onclick="window.open('+URL+');">Visit Site</button>')
@@ -171,7 +172,6 @@ var JSONdata
 $.getJSON( 'https://spreadsheets.google.com/feeds/cells/0AgtGE4FgUNk1dERRcF9RTU91OU5KQzVjTzdiQjJkOEE/od6/public/basic?alt=json', function(data) {
         JSONdata=data
     }).done(function(){getEverything().getURLList();
-                       console.log(items);
                        $("#sortable-main").each(function() {
 		                      iframeMaker.setup($(this));
 	                   })
