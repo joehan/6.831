@@ -8,6 +8,11 @@
 	visibility: hidden;
 }
 
+.collection-alert {
+	visibility: hidden;
+	margin: 3px;
+}
+
 .body-iframe {
 	border: 2px solid black;
 	position: relative;

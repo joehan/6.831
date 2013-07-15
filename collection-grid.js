@@ -72,11 +72,9 @@ var examplesInterface = (function() {
 
   ///////////// showNamePrompt, createCollection, and deleteCollection are used for the selection pane
   // to do - 
-  // 1. make it so user can only enter letters
-  // 2. make the active tab be connected with the main body to enable dragging between collections and the main group
-  // 3. maybe make dragging from the main drag copies and don't connect the collections back to the main
-  // 4. and then add a delete bucket at the bottom of the collections pane
-  // 5. this way a particular example could be used in multiple collections
+  // 1. maybe make dragging from the main drag copies and don't connect the collections back to the main
+  //    and then add a delete bucket at the bottom of the collections pane
+  //    this way a particular example could be used in multiple collections
 
   // Toggles new collection input box, to be connected to "New Collection" button
   var showNamePrompt = function() {
@@ -87,12 +85,12 @@ var examplesInterface = (function() {
 
     // toggle name input box and create button, only show if there's room for more tabs
     if ($(".collection-name").css("visibility") == "visible") {
-
+        $('.collection-alert').css('visibility', 'hidden')
         $(".collection-name").css("visibility", "hidden");
 
     } else {
 
-        if (numCollections <= maxCollections) {
+        if (numCollections < maxCollections) {
 
           $('.collection-name').css("visibility", "visible");
 
@@ -106,40 +104,41 @@ var examplesInterface = (function() {
     // variables to hold identifying information for new colleciton
     var collectionNumber = $('.collections').children().length;
     var collectionName = $('.collection-name-input')[0].value;
-    
-    // creates new collection if name is valid (to-do #1)
-    if (collectionName !== "") {
+  
+    // creates collection if user entered a name
+    if (collectionName !== '') {
+      $('.collection-alert').css('visibility', 'hidden')
       $('.collection-name-input').val("")
       $('.collection-name').css("visibility", "hidden");
 
-      var newTab = $('<li><a class='+collectionName+' href=#'+collectionName+' data-toggle="tab">'+collectionName+'</a></li)');
-      var newTabBody = $('<div id='+collectionName+' class="tab-pane"></div>')
+      var newTab = $('<li><a class=collection'+collectionNumber+' href=#collection'+collectionNumber+' data-toggle="tab">'+collectionName+'</a></li)');
+      var newTabBody = $('<div id=collection'+collectionNumber+' class="tab-pane"></div>')
       var newSortable = $('<ul id="sortable'+collectionNumber+'" class="connected'+collectionNumber+' group"></ul>')
       newTabBody.append(newSortable);
 
       $('.collections').append(newTab);
       $('.collections-content').append(newTabBody)
 
-      // figure out how to make the main group connect with only the active group or with all groups
-      // think about a for loop? 
       $('#sortable-main').sortable({
-        connectWith: ".connected"+collectionNumber,
+        connectWith: ".group",
        }).disableSelection();
       $('#sortable'+collectionNumber).sortable({
         connectWith: ".connected-main"
        }).disableSelection();
+    } else {
+      $('.collection-alert').css('visibility', 'visible')
     }
 
   }
 
   // deletes current collection and returns items to main pane. 
-  // Bug: cannot create functional pane of the same name as a previously deleted one
   var deleteCollection = function() {
-    var activeTab = $('.collections .active').text();
-    if (activeTab !== "") {
+    var activeTab = $('.collections .active').children().attr('class');
+    if ($('.collections .active') !== []) {
       var collectedIframes = $($(document.getElementById(activeTab)).children()).children();
       $('#sortable-main').append(collectedIframes);
       $($(document.getElementById(activeTab)).children()).remove();
+      $(document.getElementById(activeTab)).remove();
       $($("."+activeTab).parent()).remove();
       $("."+activeTab).remove();
     } 
@@ -153,7 +152,7 @@ var examplesInterface = (function() {
     $('.modal-footer').empty();
 
     // so many $. maybe there's a better way to do this.
-    var URL = "'"+$($($($($(this)).parent()).parent()).find('iframe')).attr("src")+"'";
+    var URL = $(this).parent().parent().find('iframe').attr('src');
     var iframeDiv = $('<div class="modal-iframe-holder"></div>')
     var modalIframe = $('<iframe class="modal-iframe" sandbox="" width="1000" height="750" src='+URL+' style="-webkit-transform:scale(0.5);-moz-transform-scale(0.5);">')
     var URLbutton = $('<button class="btn btn-primary" onclick="window.open('+URL+');">Visit Site</button>')
@@ -202,9 +201,10 @@ var examplesInterface = (function() {
 
     // html elements for selection pane skeleton
     var buttons = $('<div class="description"><button class="btn new-collection">New Collection</button><button class="btn delete-collection">Delete Collection</button></div>');
-    var collectionNaming = $('<div class="collection-name"><input type="text" class="collection-name-input"></input><button class="btn name-submit">Submit</button></div>');
+    var collectionNaming = $('<div class="collection-name"><input type="text" class="collection-name-input" placeholder="Collection name"></input><button class="btn name-submit">Create</button></div>');
     var collectionTabs = $('<div class="tabbable"><ul class="nav nav-tabs collections"></ul><div class="collections-content tab-content"></div></div>');
-
+    var alert = $('<div class="collection-alert alert alert-error">Please enter a name.</div>')
+    collectionNaming.append(alert)
     div.append(buttons, collectionNaming, collectionTabs);
 
     // attach click handlers to buttons + enter handler to input box
