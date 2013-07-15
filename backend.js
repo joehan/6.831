@@ -2,6 +2,7 @@ var items = {}
 var valueHolder
 var URLList
 var URLDict = {}
+var displayedColumns = [5,6,7,8,9]
                        
 //getEverything is called after the JSON data is recieved. It interprets the JSON data, and is used to generate the URLs that will  be displayed.                       
 function getEverything(){
@@ -71,7 +72,22 @@ function getEverything(){
     
     //
     var getColumnContents = function(URL, columnNum){
-        return URLDict[URL][0][columnNum]
+        var contentList=[]
+        contentList.push(items[1][columnNum])
+        for (i=0;i<URLDict[URL].length;i++){
+            contentList.push(URLDict[URL][i][columnNum])
+        }
+        return contentList
+    }
+    
+    var getDiplayedColumns = function(URL){
+        var categoryList = []
+        for (i=0;i<displayedColumns.length;i++){
+            var colNum = displayedColumns[i]
+            var colContents = getColumnContents(URl, colNum)
+            categoryList.push(colContents)
+        } 
+        return categoryList
     }
                                     
     
