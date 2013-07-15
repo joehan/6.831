@@ -52,7 +52,13 @@ var examplesInterface = (function() {
       $('.collections').append(newTab);
       $('.collections-content').append(newTabBody)
 
-      $('#sortable'+collectionNumber).sortable().disableSelection().droppable();
+      $('#sortable'+collectionNumber).sortable().disableSelection().droppable({
+        drop: function(event, ui) {
+          $(".overlay").on("click", showModal)
+          localStorage['collections']=$('.collection-tabs').html();
+        }
+      });
+      localStorage['collections']=$('.collection-tabs').html();
     } else {
       $('.collection-alert').css('visibility', 'visible')
     }
@@ -81,6 +87,7 @@ var examplesInterface = (function() {
     $('.modal-body').empty();
     $('.modal-footer').empty();
 
+    console.log($(this))
     var URL = $(this).parent().parent().find('iframe').attr('src');
     var quoteURL = "'"+URL+"'"
     var comments = getEverything().getColumnContents(URL, 6)
@@ -140,11 +147,16 @@ var examplesInterface = (function() {
     // html elements for selection pane skeleton
     var buttons = $('<div class="description"><button class="btn new-collection">New Collection</button><button class="btn delete-collection">Delete Collection</button></div>');
     var collectionNaming = $('<div class="collection-name"><input type="text" class="collection-name-input" placeholder="Collection name"></input><button class="btn name-submit">Create</button></div>');
-    var collectionTabs = $('<div class="tabbable"><ul class="nav nav-tabs collections"></ul><div class="collections-content tab-content"></div></div>');
+    var collectionTabs = $('<div class="tabbable collection-tabs"><ul class="nav nav-tabs collections"></ul><div class="collections-content tab-content"></div></div>');
     var alert = $('<div class="collection-alert alert alert-error">Please enter a name.</div>')
     collectionNaming.append(alert)
 
     div.append(buttons, collectionNaming, collectionTabs);
+
+    // // check localStorage for collections, if they exist, use them
+    // if (localStorage['collections'] !== undefined) {
+    //   $('.collection-tabs').html(localStorage['collections']);
+    // }
 
     // attach click handlers to buttons + enter handler to input box
     $('.new-collection').on("click", showNamePrompt);
