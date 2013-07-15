@@ -14,16 +14,14 @@
 }
 
 .body-iframe {
-	border: 2px solid black;
 	position: relative;
-	top: -422px;
-	left: -430px;
+	top: -472px;
+	left: -375px;
 	z-index: 1;
 
 }
 
 .modal-iframe {
-	border: 2px solid black;
 	position: relative;
 	top: -200px;
 	left: -238px;
@@ -39,15 +37,16 @@
 
 .iframe {
 	overflow: hidden;
-	width: 150px;
-	height: 105px;
+	width: 250px;
+	height: 187.5px;
 	position: relative;
 	float: left;
+	margin: 2px;
 }
 
 .overlay {
-	width: 150px;
-	height: 105px;
+	width: 250px;
+	height: 187.5px;
 
 	position: relative;
 	z-index: 9000;

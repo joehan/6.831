@@ -57,7 +57,9 @@ var examplesInterface = (function() {
        }).disableSelection();
       $('#sortable'+collectionNumber).sortable({
         connectWith: ".connected-main"
-       }).disableSelection();
+       }).disableSelection().droppable({
+
+       });
     } else {
       $('.collection-alert').css('visibility', 'visible')
     }
@@ -66,14 +68,16 @@ var examplesInterface = (function() {
 
   // deletes current collection and returns items to main pane. 
   var deleteCollection = function() {
+    
     var activeTab = $('.collections .active').children().attr('class');
+    
     if ($('.collections .active') !== []) {
-      var collectedIframes = $($(document.getElementById(activeTab)).children()).children();
-      $('#sortable-main').append(collectedIframes);
+
       $($(document.getElementById(activeTab)).children()).remove();
       $(document.getElementById(activeTab)).remove();
       $($("."+activeTab).parent()).remove();
       $("."+activeTab).remove();
+
     } 
 
   }
@@ -84,16 +88,19 @@ var examplesInterface = (function() {
     $('.modal-body').empty();
     $('.modal-footer').empty();
 
-    // so many $. maybe there's a better way to do this.
     var URL = $(this).parent().parent().find('iframe').attr('src');
+    var quoteURL = "'"+URL+"'"
+    var comments = getEverything().getColumnContents(URL, 6)
     var iframeDiv = $('<div class="modal-iframe-holder"></div>')
     var modalIframe = $('<iframe class="modal-iframe" sandbox="" width="1000" height="750" src='+URL+' style="-webkit-transform:scale(0.5);-moz-transform-scale(0.5);">')
-    var URLbutton = $('<button class="btn btn-primary" onclick="window.open('+URL+');">Visit Site</button>')
+    var commentsBox = $('<div class="comments" style = "border:1px solid black">'+comments+'</div>')
+    var URLbutton = $('<button class="btn btn-primary" onclick="window.open('+quoteURL+');">Visit Site</button>')
     var closeButton = $('<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>')
     iframeDiv.append(modalIframe)
-    $('.modal-body').append(iframeDiv)
+    $('.modal-body').append(iframeDiv).append(commentsBox)
     $('.modal-footer').append(closeButton, URLbutton)
   }
+
 
   ///////// setup functions
 	var setupExamples = function(div) {
@@ -118,12 +125,17 @@ var examplesInterface = (function() {
       var link = $('<a data-toggle="modal" data-target="#myModal"></a>')
       var li = $('<li class = "iframe ui-state-default">')
 			var overlay = $('<div class="overlay"></div>')
-			var iframe = $('<iframe class="body-iframe" sandbox="" width="1000" height="750" src='+URLList[i]+' style="-webkit-transform:scale(0.15);-moz-transform-scale(0.15);">')
+			var iframe = $('<iframe class="body-iframe" sandbox="" width="1000" height="750" src='+URLList[i]+' style="-webkit-transform:scale(0.25);-moz-transform-scale(0.25);">')
 
 			link.append(overlay)
       overlay.on("click", showModal)
       li.append(link, iframe)
 			div.append(li)
+
+      $('.iframe').draggable({ 
+        helper: "clone",
+        connectToSortable: '.group'
+      });
 
 		}
 	}
@@ -161,7 +173,7 @@ var examplesInterface = (function() {
     div.append(main, select);
 
     // make the main pane a sortable grid
-    $('#sortable-main').sortable().disableSelection();
+    $('#sortable-main').sortable({ helper: "clone"}).disableSelection();
 
     // add examples to main pane and functionality to selection pane
     setupExamples($('#sortable-main'));
