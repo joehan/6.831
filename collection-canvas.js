@@ -8,7 +8,7 @@ var iframeMaker = (function() {
     $('.modal-body').empty();
     $('.modal-footer').empty();
 
-    var URL = "'"+$($($($($(this)).parent()).parent()).find('iframe')).attr("src")+"'";
+    var URL = $(this).parent().parent().find('iframe').attr('src');
     console.log(URL)
     var comments = getEverything().getColumnContents(URL, 6)
     var iframeDiv = $('<div class="modal-iframe-holder"></div>')
