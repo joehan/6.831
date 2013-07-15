@@ -52,14 +52,7 @@ var examplesInterface = (function() {
       $('.collections').append(newTab);
       $('.collections-content').append(newTabBody)
 
-      $('#sortable-main').sortable({
-        connectWith: ".group",
-       }).disableSelection();
-      $('#sortable'+collectionNumber).sortable({
-        connectWith: ".connected-main"
-       }).disableSelection().droppable({
-
-       });
+      $('#sortable'+collectionNumber).sortable().disableSelection().droppable();
     } else {
       $('.collection-alert').css('visibility', 'visible')
     }
@@ -150,6 +143,7 @@ var examplesInterface = (function() {
     var collectionTabs = $('<div class="tabbable"><ul class="nav nav-tabs collections"></ul><div class="collections-content tab-content"></div></div>');
     var alert = $('<div class="collection-alert alert alert-error">Please enter a name.</div>')
     collectionNaming.append(alert)
+
     div.append(buttons, collectionNaming, collectionTabs);
 
     // attach click handlers to buttons + enter handler to input box
@@ -172,8 +166,13 @@ var examplesInterface = (function() {
 
     div.append(main, select);
 
-    // make the main pane a sortable grid
-    $('#sortable-main').sortable({ helper: "clone"}).disableSelection();
+    $('#sortable-main').droppable({
+      drop: function(event, ui) {
+        if ($(ui.draggable.prop('parentNode')).attr('id') !== "sortable-main") {
+          $(ui.draggable).remove();
+        }
+      }
+    });
 
     // add examples to main pane and functionality to selection pane
     setupExamples($('#sortable-main'));
