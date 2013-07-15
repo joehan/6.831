@@ -80,16 +80,17 @@ function getEverything(){
         return contentList
     }
     
-    var getDiplayedColumns = function(URL){
+    var getDisplayedColumns = function(URL){
         var categoryList = []
-        for (i=0;i<displayedColumns.length;i++){
+        for (var i=0;i<displayedColumns.length;i++){
             var colNum = displayedColumns[i]
-            var colContents = getColumnContents(URl, colNum)
+            var colContents = getColumnContents(URL, colNum)
             categoryList.push(colContents)
         } 
+        console.log(categoryList)
         return categoryList
     }
                                     
     
-    return {'getValues':getValues, 'parseData':parseData, 'findColumn':findColumn, 'getURLList':getURLList, 'makeURLDict':makeURLDict, 'getColumnContents':getColumnContents}
+    return {'getValues':getValues, 'parseData':parseData, 'findColumn':findColumn, 'getURLList':getURLList, 'makeURLDict':makeURLDict, 'getColumnContents':getColumnContents, 'getDisplayedColumns':getDisplayedColumns}
 }

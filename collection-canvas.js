@@ -10,15 +10,20 @@ var iframeMaker = (function() {
 
     var URL = $(this).parent().parent().find('iframe').attr('src');
     console.log(URL)
-    var comments = getEverything().getColumnContents(URL, 6)
+    var commentsList = getEverything().getDisplayedColumns(URL)
+    var commentsBox = $('<div class="btn-group"> <a class="btn dropdown-toggle" data-toggle="dropdown" href="#"> Category <span class="caret"> </span> </a> <ul class = "commentsMenu dropdown dropdown-menu" role="menu"> </ul> </div>')
+    
     var iframeDiv = $('<div class="modal-iframe-holder"></div>')
     var modalIframe = $('<iframe class="modal-iframe" sandbox="" width="1000" height="750" src='+URL+' style="-webkit-transform:scale(0.5);-moz-transform-scale(0.5);">')
-    var commentsBox = $('<div class="comments" style = "border:1px solid black">'+comments+'</div>')
     var URLbutton = $('<button class="btn btn-primary" onclick="window.open('+URL+');">Visit Site</button>')
     var closeButton = $('<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>')
     iframeDiv.append(modalIframe)
     $('.modal-body').append(iframeDiv).append(commentsBox)
     $('.modal-footer').append(closeButton, URLbutton)
+    for (var i=0;i<commentsList.length;i++){
+        var title = commentsList[i][0]
+        $('.commentsMenu').append('<li><a tabindex="-1" href="#">'+title+'</a></li>')
+    }
   }
 
 	var setup = function(div) {
@@ -45,7 +50,7 @@ var JSONdata
     
 //this calls the JSON cells feed of a published google spreadsheet   
 $.getJSON( 'https://spreadsheets.google.com/feeds/cells/0AgtGE4FgUNk1dERRcF9RTU91OU5KQzVjTzdiQjJkOEE/od6/public/basic?alt=json', function(data) {
-        JSONdata=data
+        JSONdata = data
     }).done(function(){getEverything().getURLList();
                        $("#draggable-holder").each(function() {
 		                      iframeMaker.setup($(this));
