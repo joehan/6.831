@@ -20,7 +20,6 @@ function getEverything(){
         getValues()
         for (i=0;i<valueHolder.length;i++){
               var rowNumber = valueHolder[i].title.$t.slice(1)
-              console.log(rowNumber)
               if (items[rowNumber] == undefined){
                   items[rowNumber] = [valueHolder[i].content.$t]
               }
