@@ -94,3 +94,20 @@
 #myModal {
 	z-index: 200000;
 }
+
+.commentsTable{
+    border-radius:3px;
+    width:500px;
+    
+}
+
+.fill-comments{
+    position:relative;
+    top:-5px;
+    left:10px;
+    width:50px;
+}
+
+.category{
+    width:400px;
+}

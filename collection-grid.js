@@ -1,18 +1,17 @@
 // contains functions to set up main collection area and selection pane
 var examplesInterface = (function() {
 
-  var storedNamesList = []
-  var storedBody = {}
+  var storedNamesList = [];
+  var storedBody = {};
+  var maxCollections = 4;
 
-	var exports = {}
+	var exports = {};
 
   ///////////// showNamePrompt, createCollection, and deleteCollection are used for the selection pane
 
   // Toggles new collection input box, to be connected to "New Collection" button
   var showNamePrompt = function() {
     
-    // arbitrary max number of tabs, can be changed. pretty much to prevent excessive amounts of tabs
-    var maxCollections = 4;
     var numCollections = $('.collections').children().length;
 
     // toggle name input box and create button, only show if there's room for more tabs
@@ -37,7 +36,6 @@ var examplesInterface = (function() {
     var collectionNumber = $('.collections').children().length;
     if (storedNamesList.indexOf(name) == -1) {
       storedNamesList.push(name);
-      console.log(storedNamesList)
 
       // creates collection if user entered a name
       if (name !== '') {
@@ -56,9 +54,7 @@ var examplesInterface = (function() {
         $('#sortable'+collectionNumber).sortable().disableSelection().droppable({
           drop: function(event, ui) {
             $(".overlay").on("click", showModal)
-            storedBody["collection"+collectionNumber] = ui.draggable.parent().html()
-            console.log(storedBody)
-            exports.storedBody = storedBody
+            storedBody["sortable"+collectionNumber] = ui.draggable.parent().html()
 
           }
         });
@@ -70,7 +66,7 @@ var examplesInterface = (function() {
 
   var saveCollections = function() {
     localStorage['collection'] = JSON.stringify(storedNamesList);
-    localStorage['collectionBody'] 
+    localStorage['collectionBody'] = JSON.stringify(storedBody)
   }
 
   // deletes current collection and returns items to main pane. 
@@ -85,6 +81,11 @@ var examplesInterface = (function() {
       $(document.getElementById(activeTab)).remove();
       $($("."+activeTab).parent()).remove();
       $("."+activeTab).remove();
+
+      for (var i = activeTabIndex; i < maxCollections; i++) {
+        storedBody["sortable"+(i)] = storedBody["sortable"+(i+1)]
+      }
+
       storedNamesList.splice(activeTabIndex, 1)
 
     } 
@@ -92,24 +93,50 @@ var examplesInterface = (function() {
   }
 
   // shows modal with URL-specific information, 'this' refers to the overlay div that was clicked on
+  var commentsList
+    
+    var fillComments = function(){
+        var value = $('.category').val();
+        $('.commentsTable').empty()
+        for (var i=0;i<commentsList.length;i++){
+            if (commentsList[i][0] == value){
+                for (var j=0;j<commentsList[i].length;j++){
+                    if (j==0){
+                         $('.commentsTable').append('<tr class="comments"><td clas="comments"><b>'+commentsList[i][j]+'</b></td></tr>')
+                    }
+                    else{
+                        $('.commentsTable').append('<tr class="comments"><td clas="comments">'+commentsList[i][j]+'</td></tr>')
+                    }
+                }
+                                               
+            }
+        
+        }
+    }
   var showModal = function() {
 
     $('.modal-body').empty();
     $('.modal-footer').empty();
 
-    console.log($(this))
     var URL = $(this).parent().parent().find('iframe').attr('src');
-    var quoteURL = "'"+URL+"'"
-    var comments = getEverything().getColumnContents(URL, 6)
+    console.log(URL)
+    commentsList = getEverything().getDisplayedColumns(URL)
+    var commentsBox = $('<div class= "commentsBox"><select class="category"></select><button class = "fill-comments btn" onClick = "iframeMaker.fillComments()">View</button></div>')
+    var commentsDisplay = $('<div class= "commentsDisplay"><table class="title"></table><table class="commentsTable table table-striped"><tbody><tr><td>"examples"</td></tr></tbody></table></div>')
     var iframeDiv = $('<div class="modal-iframe-holder"></div>')
     var modalIframe = $('<iframe class="modal-iframe" sandbox="" width="1000" height="750" src='+URL+' style="-webkit-transform:scale(0.5);-moz-transform-scale(0.5);">')
-    var commentsBox = $('<div class="comments" style = "border:1px solid black">'+comments+'</div>')
-    var URLbutton = $('<button class="btn btn-primary" onclick="window.open('+quoteURL+');">Visit Site</button>')
+    var URLbutton = $('<button class="btn btn-primary" onclick="window.open('+URL+');">Visit Site</button>')
     var closeButton = $('<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>')
     iframeDiv.append(modalIframe)
-    $('.modal-body').append(iframeDiv).append(commentsBox)
+    
+    $('.modal-body').append(iframeDiv).append(commentsBox).append(commentsDisplay)
     $('.modal-footer').append(closeButton, URLbutton)
+    for (var i=0;i<commentsList.length;i++){
+        var title = commentsList[i][0]
+        $('.category').append('<option value="'+title+'">'+title+'</option>')
+    }
   }
+
 
 
   ///////// setup functions
@@ -165,9 +192,28 @@ var examplesInterface = (function() {
 
     // check localStorage for collections, if they exist, use them
     if (localStorage['collection'] !== undefined) {
+      
       namesList = JSON.parse(localStorage['collection']);
-      for (var i = 0; i <= namesList.length - 1; i++) {
-          createCollection(namesList[i])
+
+      for (var i = 0; i < namesList.length; i++) {
+          createCollection(namesList[i]);
+      }
+
+
+      if (localStorage['collectionBody'] !== undefined) {
+        tabsList = $('.collections-content').find('.group').map( function() {
+          return this.id
+        }).get();
+
+        bodyList = JSON.parse(localStorage['collectionBody']);
+
+
+        for (var i = 0; i < tabsList.length; i++) {
+            $('#'+tabsList[i]).html(bodyList[tabsList[i]]);
+            $('li').css('display', 'inline')
+            $(".overlay").on("click", showModal)
+            storedBody[tabsList[i]] = bodyList[tabsList[i]]
+        }
       }
     }
 
@@ -207,7 +253,7 @@ var examplesInterface = (function() {
     setupSelectionPane($('.select-grouping'));
   }
   exports.setupInterface = setupInterface;
-
+  exports.fillComments = fillComments
 	return exports;
 })();
 
