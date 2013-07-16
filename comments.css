@@ -1,9 +1,17 @@
-.comments{
-    height:20px;
-    background-color:black;
-}
-
-.commentsMenu{
-    height:20px;
+.commentsTable{
+    border-radius:3px;
+    width:500px;
     
 }
+
+.fill-comments{
+    position:relative;
+    top:-5px;
+    left:10px;
+    width:50px;
+}
+
+.category{
+    width:400px;
+}
+.

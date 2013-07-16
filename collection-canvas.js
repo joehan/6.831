@@ -1,8 +1,27 @@
 
-var iframeMaker = (function() {
+var iframeMaker = function() {
 
 	exports = {}
-
+    var commentsList
+    
+    var fillComments = function(){
+        var value = $('.category').val();
+        $('.commentsTable').empty()
+        for (var i=0;i<commentsList.length;i++){
+            if (commentsList[i][0] == value){
+                for (var j=0;j<commentsList[i].length;j++){
+                    if (j==0){
+                         $('.commentsTable').append('<tr class="comments"><td clas="comments"><b>'+commentsList[i][j]+'</b></td></tr>')
+                    }
+                    else{
+                        $('.commentsTable').append('<tr class="comments"><td clas="comments">'+commentsList[i][j]+'</td></tr>')
+                    }
+                }
+                                               
+            }
+        
+        }
+    }
   var showModal = function() {
 
     $('.modal-body').empty();
@@ -10,19 +29,20 @@ var iframeMaker = (function() {
 
     var URL = $(this).parent().parent().find('iframe').attr('src');
     console.log(URL)
-    var commentsList = getEverything().getDisplayedColumns(URL)
-    var commentsBox = $('<div class="btn-group"> <a class="btn dropdown-toggle" data-toggle="dropdown" href="#"> Category <span class="caret"> </span> </a> <ul class = "commentsMenu dropdown dropdown-menu" role="menu"> </ul> </div>')
-    
+    commentsList = getEverything().getDisplayedColumns(URL)
+    var commentsBox = $('<div class= "commentsBox"><select class="category"></select><button class = "fill-comments btn" onClick = "iframeMaker.fillComments()">View</button></div>')
+    var commentsDisplay = $('<div class= "commentsDisplay"><table class="title"></table><table class="commentsTable table table-striped"><tbody><tr><td>"examples"</td></tr></tbody></table></div>')
     var iframeDiv = $('<div class="modal-iframe-holder"></div>')
     var modalIframe = $('<iframe class="modal-iframe" sandbox="" width="1000" height="750" src='+URL+' style="-webkit-transform:scale(0.5);-moz-transform-scale(0.5);">')
     var URLbutton = $('<button class="btn btn-primary" onclick="window.open('+URL+');">Visit Site</button>')
     var closeButton = $('<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>')
     iframeDiv.append(modalIframe)
-    $('.modal-body').append(iframeDiv).append(commentsBox)
+    
+    $('.modal-body').append(iframeDiv).append(commentsBox).append(commentsDisplay)
     $('.modal-footer').append(closeButton, URLbutton)
     for (var i=0;i<commentsList.length;i++){
         var title = commentsList[i][0]
-        $('.commentsMenu').append('<li><a tabindex="-1" href="#">'+title+'</a></li>')
+        $('.category').append('<option value="'+title+'">'+title+'</option>')
     }
   }
 
@@ -43,8 +63,9 @@ var iframeMaker = (function() {
     
 	}
 	exports.setup = setup
+    exports.fillComments = fillComments
 	return exports
-})();
+}();
 
 var JSONdata 
     
