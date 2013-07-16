@@ -1,13 +1,12 @@
 // contains functions to set up main collection area and selection pane
 var examplesInterface = (function() {
 
+  var storedNamesList = []
+  var storedBody = {}
+
 	var exports = {}
 
   ///////////// showNamePrompt, createCollection, and deleteCollection are used for the selection pane
-  // to do - 
-  // 1. maybe make dragging from the main drag copies and don't connect the collections back to the main
-  //    and then add a delete bucket at the bottom of the collections pane
-  //    this way a particular example could be used in multiple collections
 
   // Toggles new collection input box, to be connected to "New Collection" button
   var showNamePrompt = function() {
@@ -32,43 +31,53 @@ var examplesInterface = (function() {
   }
 
   // makes new collection in a tabbed list and connects it 
-  var createCollection = function() {
+  var createCollection = function(name) {
 
     // variables to hold identifying information for new colleciton
     var collectionNumber = $('.collections').children().length;
-    var collectionName = $('.collection-name-input')[0].value;
-  
-    // creates collection if user entered a name
-    if (collectionName !== '') {
-      $('.collection-alert').css('visibility', 'hidden')
-      $('.collection-name-input').val("")
-      $('.collection-name').css("visibility", "hidden");
+    if (storedNamesList.indexOf(name) == -1) {
+      storedNamesList.push(name);
+      console.log(storedNamesList)
 
-      var newTab = $('<li><a class=collection'+collectionNumber+' href=#collection'+collectionNumber+' data-toggle="tab">'+collectionName+'</a></li)');
-      var newTabBody = $('<div id=collection'+collectionNumber+' class="tab-pane"></div>')
-      var newSortable = $('<ul id="sortable'+collectionNumber+'" class="connected'+collectionNumber+' group"></ul>')
-      newTabBody.append(newSortable);
+      // creates collection if user entered a name
+      if (name !== '') {
+        $('.collection-alert').css('visibility', 'hidden')
+        $('.collection-name-input').val("")
+        $('.collection-name').css("visibility", "hidden");
 
-      $('.collections').append(newTab);
-      $('.collections-content').append(newTabBody)
+        var newTab = $('<li><a class=collection'+collectionNumber+' href=#collection'+collectionNumber+' data-toggle="tab">'+name+'</a></li)');
+        var newTabBody = $('<div id=collection'+collectionNumber+' class="tab-pane"></div>')
+        var newSortable = $('<ul id="sortable'+collectionNumber+'" class="connected'+collectionNumber+' group"></ul>')
+        newTabBody.append(newSortable);
 
-      $('#sortable'+collectionNumber).sortable().disableSelection().droppable({
-        drop: function(event, ui) {
-          $(".overlay").on("click", showModal)
-          localStorage['collections']=$('.collection-tabs').html();
-        }
-      });
-      localStorage['collections']=$('.collection-tabs').html();
+        $('.collections').append(newTab);
+        $('.collections-content').append(newTabBody)
+
+        $('#sortable'+collectionNumber).sortable().disableSelection().droppable({
+          drop: function(event, ui) {
+            $(".overlay").on("click", showModal)
+            storedBody["collection"+collectionNumber] = ui.draggable.parent().html()
+            console.log(storedBody)
+            exports.storedBody = storedBody
+
+          }
+        });
+      } 
     } else {
-      $('.collection-alert').css('visibility', 'visible')
+        $('.collection-alert').css('visibility', 'visible')
     }
+  }
 
+  var saveCollections = function() {
+    localStorage['collection'] = JSON.stringify(storedNamesList);
+    localStorage['collectionBody'] 
   }
 
   // deletes current collection and returns items to main pane. 
   var deleteCollection = function() {
     
     var activeTab = $('.collections .active').children().attr('class');
+    var activeTabIndex = activeTab[activeTab.length - 1]
     
     if ($('.collections .active') !== []) {
 
@@ -76,6 +85,7 @@ var examplesInterface = (function() {
       $(document.getElementById(activeTab)).remove();
       $($("."+activeTab).parent()).remove();
       $("."+activeTab).remove();
+      storedNamesList.splice(activeTabIndex, 1)
 
     } 
 
@@ -145,7 +155,7 @@ var examplesInterface = (function() {
   var setupSelectionPane = function(div) {
 
     // html elements for selection pane skeleton
-    var buttons = $('<div class="description"><button class="btn new-collection">New Collection</button><button class="btn delete-collection">Delete Collection</button></div>');
+    var buttons = $('<div class="description"><button class="btn new-collection">New Collection</button><button class="btn delete-collection">Delete Collection</button><button class="btn save-collection">Save</button></div>');
     var collectionNaming = $('<div class="collection-name"><input type="text" class="collection-name-input" placeholder="Collection name"></input><button class="btn name-submit">Create</button></div>');
     var collectionTabs = $('<div class="tabbable collection-tabs"><ul class="nav nav-tabs collections"></ul><div class="collections-content tab-content"></div></div>');
     var alert = $('<div class="collection-alert alert alert-error">Please enter a name.</div>')
@@ -153,15 +163,21 @@ var examplesInterface = (function() {
 
     div.append(buttons, collectionNaming, collectionTabs);
 
-    // // check localStorage for collections, if they exist, use them
-    // if (localStorage['collections'] !== undefined) {
-    //   $('.collection-tabs').html(localStorage['collections']);
-    // }
+    // check localStorage for collections, if they exist, use them
+    if (localStorage['collection'] !== undefined) {
+      namesList = JSON.parse(localStorage['collection']);
+      for (var i = 0; i <= namesList.length - 1; i++) {
+          createCollection(namesList[i])
+      }
+    }
 
     // attach click handlers to buttons + enter handler to input box
     $('.new-collection').on("click", showNamePrompt);
     $('.delete-collection').on("click", deleteCollection);
-    $('.name-submit').on("click", createCollection);
+    $('.save-collection').on("click", saveCollections);
+    $('.name-submit').on("click", function() {
+        createCollection($('.collection-name-input')[0].value)
+    });
     $('.collection-name-input').keydown(function(event){
         if(event.keyCode == 13) {
           $('.name-submit').click();
