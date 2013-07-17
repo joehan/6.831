@@ -1,13 +1,17 @@
 // contains functions to set up main collection area and selection pane
 var examplesInterface = (function() {
 
+  // variables for storage of collections
   var storedNamesList = [];
   var storedBody = {};
+
+  // arbitrary max number of collections, changable
   var maxCollections = 4;
 
+  // holds functions and variables accessible outside of the module
 	var exports = {};
 
-  ///////////// showNamePrompt, createCollection, and deleteCollection are used for the selection pane
+  // showNamePrompt, createCollection, and deleteCollection are used for the selection pane
 
   // Toggles new collection input box, to be connected to "New Collection" button
   var showNamePrompt = function() {
@@ -16,33 +20,37 @@ var examplesInterface = (function() {
 
     // toggle name input box and create button, only show if there's room for more tabs
     if ($(".collection-name").css("visibility") == "visible") {
+        
         $('.collection-alert').css('visibility', 'hidden')
         $(".collection-name").css("visibility", "hidden");
 
     } else {
 
         if (numCollections < maxCollections) {
-
           $('.collection-name').css("visibility", "visible");
-
         } 
     }
   }
 
-  // makes new collection in a tabbed list and connects it 
+  // makes new collection in a tabbed list and connects it to main group
   var createCollection = function(name) {
 
-    // variables to hold identifying information for new colleciton
+    // gives collection index #
     var collectionNumber = $('.collections').children().length;
+    
+    // collection names must be unique
     if (storedNamesList.indexOf(name) == -1) {
-      storedNamesList.push(name);
 
       // creates collection if user entered a name
       if (name !== '') {
+        storedNamesList.push(name);
+
+        // resets collection name input area
         $('.collection-alert').css('visibility', 'hidden')
         $('.collection-name-input').val("")
         $('.collection-name').css("visibility", "hidden");
 
+        // HTML skeleton for new collection body
         var newTab = $('<li><a class=collection'+collectionNumber+' href=#collection'+collectionNumber+' data-toggle="tab">'+name+'</a></li)');
         var newTabBody = $('<div id=collection'+collectionNumber+' class="tab-pane"></div>')
         var newSortable = $('<ul id="sortable'+collectionNumber+'" class="connected'+collectionNumber+' group"></ul>')
@@ -51,12 +59,14 @@ var examplesInterface = (function() {
         $('.collections').append(newTab);
         $('.collections-content').append(newTabBody)
 
+        // bind drop function to any iframe dropped into the collection, needed because onclick handlers
+        // unbind when the object is moved
         $('#sortable'+collectionNumber).sortable().disableSelection().droppable({
           drop: function(event, ui) {
             $(".overlay").on("click", showModal)
             storedBody["sortable"+collectionNumber] = ui.draggable.parent().html()
-
           }
+
         });
       } 
     } else {
@@ -64,55 +74,66 @@ var examplesInterface = (function() {
     }
   }
 
+  // puts content of collections into localStorage
   var saveCollections = function() {
+
+    // put collection names into storage
     localStorage['collection'] = JSON.stringify(storedNamesList);
+
+    // put body content into storage
     localStorage['collectionBody'] = JSON.stringify(storedBody)
   }
 
   // deletes current collection and returns items to main pane. 
   var deleteCollection = function() {
     
+    // variables to hold information about the active tab
     var activeTab = $('.collections .active').children().attr('class');
     var activeTabIndex = activeTab[activeTab.length - 1]
     
+    // delete function will only run if there is an active tab, which is the tab that it deletes
     if ($('.collections .active') !== []) {
 
+      // remove all HTML elements associated with the active tab
       $($(document.getElementById(activeTab)).children()).remove();
       $(document.getElementById(activeTab)).remove();
       $($("."+activeTab).parent()).remove();
       $("."+activeTab).remove();
 
+      // shift list of all tabs' content down by one to account for a deletion in the middle of the list of tabs
       for (var i = activeTabIndex; i < maxCollections; i++) {
-        storedBody["sortable"+(i)] = storedBody["sortable"+(i+1)]
+        storedBody["sortable"+(i)] = storedBody["sortable"+parseInt(i+1)]
       }
 
+      // remove deleted collection name from storedNamesList
       storedNamesList.splice(activeTabIndex, 1)
 
     } 
 
   }
 
-  // shows modal with URL-specific information, 'this' refers to the overlay div that was clicked on
   var commentsList
     
-    var fillComments = function(){
-        var value = $('.category').val();
-        $('.commentsTable').empty()
-        for (var i=0;i<commentsList.length;i++){
-            if (commentsList[i][0] == value){
-                for (var j=0;j<commentsList[i].length;j++){
-                    if (j==0){
-                         $('.commentsTable').append('<tr class="comments"><td clas="comments"><b>'+commentsList[i][j]+'</b></td></tr>')
-                    }
-                    else{
-                        $('.commentsTable').append('<tr class="comments"><td clas="comments">'+commentsList[i][j]+'</td></tr>')
-                    }
-                }
-                                               
-            }
-        
-        }
-    }
+  var fillComments = function(){
+      var value = $('.category').val();
+      $('.commentsTable').empty()
+      for (var i=0;i<commentsList.length;i++){
+          if (commentsList[i][0] == value){
+              for (var j=0;j<commentsList[i].length;j++){
+                  if (j==0){
+                       $('.commentsTable').append('<tr class="comments"><td clas="comments"><b>'+commentsList[i][j]+'</b></td></tr>')
+                  }
+                  else{
+                      $('.commentsTable').append('<tr class="comments"><td clas="comments">'+commentsList[i][j]+'</td></tr>')
+                  }
+              }
+                                             
+          }
+      
+      }
+  }
+
+  // shows modal with URL-specific information, 'this' refers to the overlay div that was clicked on
   var showModal = function() {
 
     $('.modal-body').empty();
@@ -211,6 +232,7 @@ var examplesInterface = (function() {
         for (var i = 0; i < tabsList.length; i++) {
             $('#'+tabsList[i]).html(bodyList[tabsList[i]]);
             $('li').css('display', 'inline')
+            $('.ui-sortable-placeholder').css('display', 'none')
             $(".overlay").on("click", showModal)
             storedBody[tabsList[i]] = bodyList[tabsList[i]]
         }
