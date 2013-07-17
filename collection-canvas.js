@@ -1,3 +1,22 @@
+var getURLVars = function() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
+var googleKey = getURLVars()['googleKey']
+var sheet = getURLVars()['sheet']
+var category = getURLVars()['category'].split(',')
+var displayed = getURLVars()['displayed'].split(',')
+displayedColumns = displayed
+categoryColumns = category
+
+
+var JSONURL = 'https://spreadsheets.google.com/feeds/cells/'+googleKey+'/'+sheet+'/public/basic?alt=json'
+
+
+
 
 var iframeMaker = function() {
 
@@ -11,10 +30,10 @@ var iframeMaker = function() {
             if (commentsList[i][0] == value){
                 for (var j=0;j<commentsList[i].length;j++){
                     if (j==0){
-                         $('.commentsTable').append('<tr class="comments"><td clas="comments"><b>'+commentsList[i][j]+'</b></td></tr>')
+                         $('.commentsTable').append('<tr class="comments"><td class="comments"><b>'+commentsList[i][j]+'</b></td></tr>')
                     }
                     else{
-                        $('.commentsTable').append('<tr class="comments"><td clas="comments">'+commentsList[i][j]+'</td></tr>')
+                        $('.commentsTable').append('<tr class="comments"><td class="comments">'+commentsList[i][j]+'</td></tr>')
                     }
                 }
                                                
@@ -70,7 +89,7 @@ var iframeMaker = function() {
 var JSONdata 
     
 //this calls the JSON cells feed of a published google spreadsheet   
-$.getJSON( 'https://spreadsheets.google.com/feeds/cells/0AgtGE4FgUNk1dERRcF9RTU91OU5KQzVjTzdiQjJkOEE/od6/public/basic?alt=json', function(data) {
+$.getJSON( JSONURL, function(data) {
         JSONdata = data
     }).done(function(){getEverything().getURLList();
                        $("#draggable-holder").each(function() {
