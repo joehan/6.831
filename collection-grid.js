@@ -61,7 +61,11 @@ var examplesInterface = (function() {
 
         // bind drop function to any iframe dropped into the collection, needed because onclick handlers
         // unbind when the object is moved
-        $('#sortable'+collectionNumber).sortable().disableSelection().droppable({
+        $('#sortable'+collectionNumber).sortable({
+          stop: function(event, ui) {
+            storedBody["sortable"+collectionNumber] = $("#sortable"+collectionNumber).html()
+          }
+        }).disableSelection().droppable({
           drop: function(event, ui) {
             $(".overlay").on("click", showModal)
             storedBody["sortable"+collectionNumber] = ui.draggable.parent().html()
@@ -265,7 +269,11 @@ var examplesInterface = (function() {
     $('#sortable-main').droppable({
       drop: function(event, ui) {
         if ($(ui.draggable.prop('parentNode')).attr('id') !== "sortable-main") {
+          var activeTab = $('.collections .active').children().attr('class');
+          var activeTabIndex = activeTab[activeTab.length - 1]
+
           $(ui.draggable).remove();
+          storedBody["sortable"+activeTabIndex] = $("#sortable"+activeTabIndex).html()
         }
       }
     });
