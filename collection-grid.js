@@ -1,3 +1,22 @@
+var getURLVars = function() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
+var googleKey = getURLVars()['googleKey']
+var sheet = getURLVars()['sheet']
+var category = getURLVars()['category'].split(',')
+var displayed = getURLVars()['displayed'].split(',')
+displayedColumns = displayed
+categoryColumns = category
+
+
+var JSONURL = 'https://spreadsheets.google.com/feeds/cells/'+googleKey+'/'+sheet+'/public/basic?alt=json'
+
+
+
 // contains functions to set up main collection area and selection pane
 
 // to-do: make collection modal work. instructions before showCollectionModal.
@@ -126,8 +145,11 @@ var examplesInterface = (function() {
   // URL is the URL associated with the comments table, allow us to access the comments list
   // for that specific comments table.
   var fillComments = function(num, URL){
+      console.log(URL)
       var value = $('.category'+num).val();
+      console.log(value)
       var commentsList = getEverything().getDisplayedColumns(URL)
+      console.log(commentsList)
       $('.commentsTable'+num).empty()
       for (var i=0;i<commentsList.length;i++){
           if (commentsList[i][0] == value){
@@ -154,7 +176,7 @@ var examplesInterface = (function() {
     var URL = $(this).parent().parent().find('iframe').attr('src');
     var quoteURL = "'"+URL+"'"
     var commentsList = getEverything().getDisplayedColumns(URL)
-    var commentsBox = $('<div class= "commentsBox"><select class="category category0"></select><button class = "fill-comments btn" onClick = "examplesInterface.fillComments(0, '+quoteURL+')">View</button></div>')
+    var commentsBox = $('<div class= "commentsBox"><select class="category0"></select><button class = "fill-comments btn" onClick = "examplesInterface.fillComments(0, '+quoteURL+')">View</button></div>')
     var commentsDisplay = $('<div class= "commentsDisplay"><table class="title"></table><table class="commentsTable0 table table-striped"><tbody><tr><td>"examples"</td></tr></tbody></table></div>')
     var iframeDiv = $('<div class="modal-iframe-holder"></div>')
     var modalIframe = $('<iframe class="modal-iframe" sandbox="" width="1000" height="750" src='+URL+' style="-webkit-transform:scale(0.5);-moz-transform-scale(0.5);">')
@@ -190,7 +212,7 @@ var examplesInterface = (function() {
 
         var commentsList = getEverything().getDisplayedColumns(URL)
 
-        var commentsBox = $('<div class= "commentsBox"><select class="category category'+i+'"></select><button class = "fill-comments btn" onClick = "examplesInterface.fillComments('+i+', '+quoteURL+')">View</button></div>')
+        var commentsBox = $('<div class= "commentsBox"><select class="category'+i+'"></select><button class = "fill-comments btn" onClick = "examplesInterface.fillComments('+i+', '+quoteURL+')">View</button></div>')
         var commentsDisplay = $('<div class= "commentsDisplay"><table class="title"></table><table class="commentsTable'+i+' table table-striped"><tbody><tr><td>"examples"</td></tr></tbody></table></div>')
         exampleAndComments.append(commentsBox).append(commentsDisplay)
 
@@ -349,7 +371,7 @@ var examplesInterface = (function() {
 var JSONdata 
     
     
-$.getJSON( 'https://spreadsheets.google.com/feeds/cells/0AgtGE4FgUNk1dERRcF9RTU91OU5KQzVjTzdiQjJkOEE/od6/public/basic?alt=json', function(data) {
+$.getJSON(JSONURL, function(data) {
         JSONdata=data
     }).done(function(){
                       getEverything().getURLList();
