@@ -5,7 +5,6 @@
 
 .collection-name {
 	margin: 3px;
-	visibility: hidden;
 }
 
 .collection-alert {
@@ -18,7 +17,7 @@
 }
 
 #collectionModal .modal-body {
-	max-height: 550px;
+	max-height: 80%;
 }
 .trash {
 	height: 40px;
@@ -33,6 +32,10 @@
 	left: -375px;
 	z-index: 1;
 
+}
+
+#collectionNameModal {
+	z-index: 200000;
 }
 
 .modal-iframe {
@@ -138,4 +141,21 @@
 	margin-left: 5%;
 	margin-right: 5%;
 	top: 5%;
+}
+
+.commentsDisplay {
+	height: 140px;
+	overflow: scroll;
+	margin: 10px;
+}
+
+.tab-name-input {
+	border: none;
+	width: 70px;
+	box-shadow: none;
+}
+
+.collections li a {
+	padding: 4px;
+	margin-top: 2px;
 }

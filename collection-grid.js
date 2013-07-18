@@ -15,13 +15,12 @@ categoryColumns = category
 
 var JSONURL = 'https://spreadsheets.google.com/feeds/cells/'+googleKey+'/'+sheet+'/public/basic?alt=json'
 
-
-
 // contains functions to set up main collection area and selection pane
 
-// to-do: make collection modal work. instructions before showCollectionModal.
-// stop calling two modals at once!!
-// fix layout of collection modal
+// to-do: move larger view of collections to separate tab in main window
+// turn create-a-collection into a modal popup
+// fix layout of larger collection view
+// show all comments at once
 // look into parse as a storage thingy.
 var examplesInterface = (function() {
 
@@ -30,75 +29,64 @@ var examplesInterface = (function() {
   var storedBody = {};
 
   // arbitrary max number of collections, changable
-  var maxCollections = 4;
+  var maxCollections = 5;
 
   // holds functions and variables accessible outside of the module
 	var exports = {};
 
-  // showNamePrompt, createCollection, and deleteCollection are used for the selection pane
-
-  // Toggles new collection input box, to be connected to "New Collection" button
-  var showNamePrompt = function() {
-    
-    var numCollections = $('.collections').children().length;
-
-    // toggle name input box and create button, only show if there's room for more tabs
-    if ($(".collection-name").css("visibility") == "visible") {
-        
-        $('.collection-alert').css('visibility', 'hidden')
-        $(".collection-name").css("visibility", "hidden");
-
-    } else {
-
-        if (numCollections < maxCollections) {
-          $('.collection-name').css("visibility", "visible");
-        } 
-    }
-  }
+  // createCollection and deleteCollection are used for the selection pane
 
   // makes new collection in a tabbed list and connects it to main group
   var createCollection = function(name) {
 
     // gives collection index #
     var collectionNumber = $('.collections').children().length;
-    
-    // collection names must be unique
-    if (storedNamesList.indexOf(name) == -1) {
 
-      // creates collection if user entered a name
-      if (name !== '') {
-        storedNamesList.push(name);
+    if (maxCollections  > collectionNumber) {
 
-        // resets collection name input area
-        $('.collection-alert').css('visibility', 'hidden')
-        $('.collection-name-input').val("")
-        $('.collection-name').css("visibility", "hidden");
+      storedNamesList.push(name);
 
-        // HTML skeleton for new collection body
-        var newTab = $('<li><a class=collection'+collectionNumber+' href=#collection'+collectionNumber+' data-toggle="tab">'+name+'</a></li)');
-        var newTabBody = $('<div id=collection'+collectionNumber+' class="tab-pane"></div>')
-        var newSortable = $('<ul id="sortable'+collectionNumber+'" class="connected'+collectionNumber+' group"></ul>')
-        newTabBody.append(newSortable);
+      // resets collection name input area
+      $('.collection-alert').css('visibility', 'hidden')
+      $('.collection-name-input').val("")
+      $('.collection-name').css("visibility", "hidden");
 
-        $('.collections').append(newTab);
-        $('.collections-content').append(newTabBody)
+      // HTML skeleton for new collection body
+      var newTab = $('<li><a class=collection'+collectionNumber+' href=#collection'+collectionNumber+' data-toggle="tab"><input class="tab-name-input" type="text" placeholder="'+name+'" style="border: none; box-shadow: none; background-color: transparent;"></input></a></li)');
+      var newTabBody = $('<div id=collection'+collectionNumber+' class="tab-pane"></div>')
+      var newSortable = $('<ul id="sortable'+collectionNumber+'" class="connected'+collectionNumber+' group"></ul>')
+      newTabBody.append(newSortable);
 
-        // bind drop function to any iframe dropped into the collection, needed because onclick handlers
-        // unbind when the object is moved
-        $('#sortable'+collectionNumber).sortable({
-          stop: function(event, ui) {
-            storedBody["sortable"+collectionNumber] = $("#sortable"+collectionNumber).html()
-          }
+      $('.collections').append(newTab);
+      $('.collections-content').append(newTabBody);
+
+      if (name !== "untitled") {
+        $('.collection'+collectionNumber+' .tab-name-input').val(name);
+      }
+
+      $('.collection'+collectionNumber+' .tab-name-input').keydown(function(event){
+        if(event.keyCode == 13) {
+          newName = $('.collection'+collectionNumber+' .tab-name-input').val();
+          $('.collection'+collectionNumber+' .tab-name-input').blur();
+          storedNamesList.splice(collectionNumber-1, 1, newName);
+          saveCollections();
+        }
+      });
+
+      // bind drop function to any iframe dropped into the collection, needed because onclick handlers
+      // unbind when the object is moved
+      $('#sortable'+collectionNumber).sortable({
+        stop: function(event, ui) {
+          storedBody["sortable"+collectionNumber] = $("#sortable"+collectionNumber).html()
+          saveCollections();
+        }
         }).disableSelection().droppable({
-          drop: function(event, ui) {
-            $(".overlay").on("click", showSingleModal)
-            storedBody["sortable"+collectionNumber] = ui.draggable.parent().html()
-          }
-
+        drop: function(event, ui) {
+          $(".overlay").on("click", showSingleModal)
+          storedBody["sortable"+collectionNumber] = ui.draggable.parent().html()
+          saveCollections();
+        }
         });
-      } 
-    } else {
-        $('.collection-alert').css('visibility', 'visible')
     }
   }
 
@@ -194,7 +182,7 @@ var examplesInterface = (function() {
 
   // figure out a way to avoid modal breakage problem
   var showCollectionModal = function() {
-    if ($('.collections .active').text() !== "") {
+    if ($('.collections .active').val() !== "") {
       $('#collectionModal .modal-body').empty();
       $('#collectionModal .modal-footer').empty();
       $('#collectionModalLabel').text($('.collections .active').text())
@@ -272,14 +260,14 @@ var examplesInterface = (function() {
   var setupSelectionPane = function(div) {
 
     // html elements for selection pane skeleton
-    var buttons = $('<div class="description"><button class="btn new-collection">New Collection</button><button class="btn delete-collection">Delete Collection</button><button class="btn save-collection">Save</button></div>');
-    var collectionNaming = $('<div class="collection-name"><input type="text" class="collection-name-input" placeholder="Collection name"></input><button class="btn name-submit">Create</button></div>');
-    var collectionTabs = $('<div class="tabbable collection-tabs"><ul class="nav nav-tabs collections"></ul><div class="collections-content tab-content"></div></div>');
-    var alert = $('<div class="collection-alert alert alert-error">Please enter a different name.</div>')
+    var buttons = $('<button class="btn delete-collection">Delete Collection</button><button class="btn save-collection">Save</button></div>');
+    //var collectionNaming = $('<div class="collection-name"><input type="text" class="collection-name-input" placeholder="Collection name"></input><button class="btn name-submit">Create</button></div>');
+    var collectionTabs = $('<div class="tabbable collection-tabs"><ul class="nav nav-tabs collections"><li><a href="#"><i class="new-tab icon-plus"></i></a></li></ul><div class="collections-content tab-content"></div></div>');
+    //var alert = $('<div class="collection-alert alert alert-error">Please enter a different name.</div>')
     var showLarger = $('<div><button class="btn show-larger" data-toggle="modal" data-target="#collectionModal">Show Larger</button></div>');
-    collectionNaming.append(alert)
+    //collectionNaming.append(alert)
 
-    div.append(buttons, collectionNaming, showLarger, collectionTabs);
+    div.append(buttons, showLarger, collectionTabs);
 
     // modal for showing collections
     var collectionModal = '<div id="collectionModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'
@@ -294,6 +282,21 @@ var examplesInterface = (function() {
                +'</div>';
 
     div.append(collectionModal);
+
+    var collectionNameModal = '<div id="collectionNameModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'
+               +  '<div class="modal-header">'
+               +    '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>'
+               +    '<h3 id="collectionNameModalLabel">New Collection</h3>'
+               +  '</div>'
+               +  '<div class="modal-body">'
+               +  '<div class="collection-name"><input type="text" class="collection-name-input" placeholder="Collection name"></input><button class="btn name-submit">Create</button></div>'
+               +  '<div class="collection-alert alert alert-error">Please enter a different name.</div>'
+               +  '</div>'
+               +  '<div class="modal-footer">'
+               +  '</div>'
+               +'</div>';
+    
+    div.append(collectionNameModal);
 
     // check localStorage for collections, if they exist, use them
     if (localStorage['collection'] !== undefined) {
@@ -324,12 +327,14 @@ var examplesInterface = (function() {
     }
 
     // attach click handlers to buttons + enter handler to input box
-    $('.new-collection').on("click", showNamePrompt);
+    $('.new-tab').on("click", function() {
+        createCollection("untitled")
+    });
     $('.delete-collection').on("click", deleteCollection);
     $('.save-collection').on("click", saveCollections);
-    $('.name-submit').on("click", function() {
-        createCollection($('.collection-name-input')[0].value);
-    });
+    // $('.name-submit').on("click", function() {
+    //     createCollection($('.collection-name-input')[0].value);
+    // });
     $('.collection-name-input').keydown(function(event){
         if(event.keyCode == 13) {
           $('.name-submit').click();
