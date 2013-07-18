@@ -72,7 +72,7 @@ function getEverything(){
         
     }
     
-    //
+    //getColumnContents is takes a URL and a column number. It searches through URLDict and pulls out each item in the given column that is associated with the given URL. It is used to help build the comments table/
     var getColumnContents = function(URL, columnNum){
         var contentList=[]
         contentList.push(items[1][columnNum])
@@ -81,7 +81,7 @@ function getEverything(){
         }
         return contentList
     }
-    
+    //getDisplayedColumns takes a URL and uses displayedColumns(which is determined from the URL query). It is the back end of the displayed information
     var getDisplayedColumns = function(URL){
         var displayedList = []
         for (var i=0;i<displayedColumns.length;i++){
@@ -89,10 +89,10 @@ function getEverything(){
             var colContents = getColumnContents(URL, colNum)
             displayedList.push(colContents)
         } 
-        console.log(displayedList)
         return displayedList
     }
     
+    //URLbySearch is work in progress right now. IT will be used for a filtering function
     var URLbySearch = function(searchTerm){
         var searchURLDict = {}
         for (var i=0;i<categoryColumns.length;i++){

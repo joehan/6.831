@@ -6,14 +6,13 @@ var getURLVars = function() {
     return vars;
 }
 var googleKey = getURLVars()['googleKey']
-var sheet = getURLVars()['sheet']
 var category = getURLVars()['category'].split(',')
 var displayed = getURLVars()['displayed'].split(',')
 displayedColumns = displayed
 categoryColumns = category
 
 
-var JSONURL = 'https://spreadsheets.google.com/feeds/cells/'+googleKey+'/'+sheet+'/public/basic?alt=json'
+var JSONURL = 'https://spreadsheets.google.com/feeds/cells/'+googleKey+'/oD6/public/basic?alt=json'
 
 // contains functions to set up main collection area and selection pane
 
@@ -165,7 +164,7 @@ var examplesInterface = (function() {
     var quoteURL = "'"+URL+"'"
     var commentsList = getEverything().getDisplayedColumns(URL)
     var commentsBox = $('<div class= "commentsBox"><select class="category0"></select><button class = "fill-comments btn" onClick = "examplesInterface.fillComments(0, '+quoteURL+')">View</button></div>')
-    var commentsDisplay = $('<div class= "commentsDisplay"><table class="title"></table><table class="commentsTable0 table table-striped"><tbody><tr><td>"examples"</td></tr></tbody></table></div>')
+    var commentsDisplay = $('<div class= "commentsDisplay"><table class="title"></table><table class="commentsTable0 table table-striped"><tbody></tbody></table></div>')
     var iframeDiv = $('<div class="modal-iframe-holder"></div>')
     var modalIframe = $('<iframe class="modal-iframe" sandbox="" width="1000" height="750" src='+URL+' style="-webkit-transform:scale(0.5);-moz-transform-scale(0.5);">')
     var URLbutton = $('<button class="btn btn-primary" onclick="window.open('+quoteURL+');">Visit Site</button>')
@@ -201,7 +200,7 @@ var examplesInterface = (function() {
         var commentsList = getEverything().getDisplayedColumns(URL)
 
         var commentsBox = $('<div class= "commentsBox"><select class="category'+i+'"></select><button class = "fill-comments btn" onClick = "examplesInterface.fillComments('+i+', '+quoteURL+')">View</button></div>')
-        var commentsDisplay = $('<div class= "commentsDisplay"><table class="title"></table><table class="commentsTable'+i+' table table-striped"><tbody><tr><td>"examples"</td></tr></tbody></table></div>')
+        var commentsDisplay = $('<div class= "commentsDisplay"><table class="title"></table><table class="commentsTable'+i+' table table-striped"><tbody></tbody></table></div>')
         exampleAndComments.append(commentsBox).append(commentsDisplay)
 
         $('#collectionModal .modal-body').append(exampleAndComments)
