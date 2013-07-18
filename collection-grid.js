@@ -1,4 +1,9 @@
 // contains functions to set up main collection area and selection pane
+
+// to-do: make collection modal work. instructions before showCollectionModal.
+// stop calling two modals at once!!
+// fix layout of collection modal
+// look into parse as a storage thingy.
 var examplesInterface = (function() {
 
   // variables for storage of collections
@@ -67,7 +72,7 @@ var examplesInterface = (function() {
           }
         }).disableSelection().droppable({
           drop: function(event, ui) {
-            $(".overlay").on("click", showModal)
+            $(".overlay").on("click", showSingleModal)
             storedBody["sortable"+collectionNumber] = ui.draggable.parent().html()
           }
 
@@ -116,19 +121,22 @@ var examplesInterface = (function() {
 
   }
 
-  var commentsList
-    
-  var fillComments = function(){
-      var value = $('.category').val();
-      $('.commentsTable').empty()
+  // takes two arguments to allow for more than one comments box to appear
+  // num is used to dynamically create tables, and is used here to modify them
+  // URL is the URL associated with the comments table, allow us to access the comments list
+  // for that specific comments table.
+  var fillComments = function(num, URL){
+      var value = $('.category'+num).val();
+      var commentsList = getEverything().getDisplayedColumns(URL)
+      $('.commentsTable'+num).empty()
       for (var i=0;i<commentsList.length;i++){
           if (commentsList[i][0] == value){
               for (var j=0;j<commentsList[i].length;j++){
                   if (j==0){
-                       $('.commentsTable').append('<tr class="comments"><td clas="comments"><b>'+commentsList[i][j]+'</b></td></tr>')
+                       $('.commentsTable'+num).append('<tr class="comments"><td clas="comments"><b>'+commentsList[i][j]+'</b></td></tr>')
                   }
                   else{
-                      $('.commentsTable').append('<tr class="comments"><td clas="comments">'+commentsList[i][j]+'</td></tr>')
+                      $('.commentsTable'+num).append('<tr class="comments"><td clas="comments">'+commentsList[i][j]+'</td></tr>')
                   }
               }
                                              
@@ -138,27 +146,62 @@ var examplesInterface = (function() {
   }
 
   // shows modal with URL-specific information, 'this' refers to the overlay div that was clicked on
-  var showModal = function() {
+  var showSingleModal = function() {
 
-    $('.modal-body').empty();
-    $('.modal-footer').empty();
+    $('#myModal .modal-body').empty();
+    $('#myModal .modal-footer').empty();
 
     var URL = $(this).parent().parent().find('iframe').attr('src');
     var quoteURL = "'"+URL+"'"
-    commentsList = getEverything().getDisplayedColumns(URL)
-    var commentsBox = $('<div class= "commentsBox"><select class="category"></select><button class = "fill-comments btn" onClick = "examplesInterface.fillComments()">View</button></div>')
-    var commentsDisplay = $('<div class= "commentsDisplay"><table class="title"></table><table class="commentsTable table table-striped"><tbody><tr><td>"examples"</td></tr></tbody></table></div>')
+    var commentsList = getEverything().getDisplayedColumns(URL)
+    var commentsBox = $('<div class= "commentsBox"><select class="category category0"></select><button class = "fill-comments btn" onClick = "examplesInterface.fillComments(0, '+quoteURL+')">View</button></div>')
+    var commentsDisplay = $('<div class= "commentsDisplay"><table class="title"></table><table class="commentsTable0 table table-striped"><tbody><tr><td>"examples"</td></tr></tbody></table></div>')
     var iframeDiv = $('<div class="modal-iframe-holder"></div>')
     var modalIframe = $('<iframe class="modal-iframe" sandbox="" width="1000" height="750" src='+URL+' style="-webkit-transform:scale(0.5);-moz-transform-scale(0.5);">')
     var URLbutton = $('<button class="btn btn-primary" onclick="window.open('+quoteURL+');">Visit Site</button>')
     var closeButton = $('<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>')
     iframeDiv.append(modalIframe)
     
-    $('.modal-body').append(iframeDiv).append(commentsBox).append(commentsDisplay)
-    $('.modal-footer').append(closeButton, URLbutton)
+    $('#myModal .modal-body').append(iframeDiv).append(commentsBox).append(commentsDisplay)
+    $('#myModal .modal-footer').append(closeButton, URLbutton)
     for (var i=0;i<commentsList.length;i++){
         var title = commentsList[i][0]
-        $('.category').append('<option value="'+title+'">'+title+'</option>')
+        $('.category0').append('<option value="'+title+'">'+title+'</option>')
+    }
+  }
+
+  // figure out a way to avoid modal breakage problem
+  var showCollectionModal = function() {
+    if ($('.collections .active').text() !== "") {
+      $('#collectionModal .modal-body').empty();
+      $('#collectionModal .modal-footer').empty();
+      $('#collectionModalLabel').text($('.collections .active').text())
+
+      selectionList = $('.active .group li')
+
+      for (var i = 0; i < selectionList.length; i++) {
+        var URL = $($('.active .group li iframe')[i]).prop('src')
+        var quoteURL = "'"+URL+"'"
+        var exampleAndComments = $('<div class="commented-iframe"></div>')
+        var exampleDiv = $('<div class="iframe"></div>')
+        var example = $(selectionList[i]).html();
+        exampleDiv.append(example);
+        exampleAndComments.append(exampleDiv);
+
+        var commentsList = getEverything().getDisplayedColumns(URL)
+
+        var commentsBox = $('<div class= "commentsBox"><select class="category category'+i+'"></select><button class = "fill-comments btn" onClick = "examplesInterface.fillComments('+i+', '+quoteURL+')">View</button></div>')
+        var commentsDisplay = $('<div class= "commentsDisplay"><table class="title"></table><table class="commentsTable'+i+' table table-striped"><tbody><tr><td>"examples"</td></tr></tbody></table></div>')
+        exampleAndComments.append(commentsBox).append(commentsDisplay)
+
+        $('#collectionModal .modal-body').append(exampleAndComments)
+
+        for (var j=0;j<commentsList.length;j++){
+          var title = commentsList[j][0]
+          $('.category'+i).append('<option value="'+title+'">'+title+'</option>')
+        }
+      }
+      $('.commented-iframe a').attr("data-target", "undefined")
     }
   }
 
@@ -168,7 +211,7 @@ var examplesInterface = (function() {
 	var setupExamples = function(div) {
  
     // make modal to view larger images of examples
-    var modal = '<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'
+    var singleModal = '<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'
                +  '<div class="modal-header">'
                +    '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>'
                +    '<h3 id="myModalLabel">Modal header</h3>'
@@ -179,7 +222,7 @@ var examplesInterface = (function() {
                +  '</div>'
                +'</div>';
 
-    div.append(modal);
+    div.append(singleModal);
     
     // create iframe, overlay, and link to modal for each URL
     for (i=1;i<URLList.length;i++) {
@@ -190,7 +233,7 @@ var examplesInterface = (function() {
 			var iframe = $('<iframe class="body-iframe" sandbox="" width="1000" height="750" src='+URLList[i]+' style="-webkit-transform:scale(0.25);-moz-transform-scale(0.25);">')
 
 			link.append(overlay)
-      overlay.on("click", showModal)
+      overlay.on("click", showSingleModal)
       li.append(link, iframe)
 			div.append(li)
 
@@ -210,10 +253,25 @@ var examplesInterface = (function() {
     var buttons = $('<div class="description"><button class="btn new-collection">New Collection</button><button class="btn delete-collection">Delete Collection</button><button class="btn save-collection">Save</button></div>');
     var collectionNaming = $('<div class="collection-name"><input type="text" class="collection-name-input" placeholder="Collection name"></input><button class="btn name-submit">Create</button></div>');
     var collectionTabs = $('<div class="tabbable collection-tabs"><ul class="nav nav-tabs collections"></ul><div class="collections-content tab-content"></div></div>');
-    var alert = $('<div class="collection-alert alert alert-error">Please enter a name.</div>')
+    var alert = $('<div class="collection-alert alert alert-error">Please enter a different name.</div>')
+    var showLarger = $('<div><button class="btn show-larger" data-toggle="modal" data-target="#collectionModal">Show Larger</button></div>');
     collectionNaming.append(alert)
 
-    div.append(buttons, collectionNaming, collectionTabs);
+    div.append(buttons, collectionNaming, showLarger, collectionTabs);
+
+    // modal for showing collections
+    var collectionModal = '<div id="collectionModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'
+               +  '<div class="modal-header">'
+               +    '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>'
+               +    '<h3 id="collectionModalLabel">You should select a collection.</h3>'
+               +  '</div>'
+               +  '<div class="modal-body">'
+               +  '</div>'
+               +  '<div class="modal-footer">'
+               +  '</div>'
+               +'</div>';
+
+    div.append(collectionModal);
 
     // check localStorage for collections, if they exist, use them
     if (localStorage['collection'] !== undefined) {
@@ -237,7 +295,7 @@ var examplesInterface = (function() {
             $('#'+tabsList[i]).html(bodyList[tabsList[i]]);
             $('li').css('display', 'inline')
             $('.ui-sortable-placeholder').css('display', 'none')
-            $(".overlay").on("click", showModal)
+            $(".overlay").on("click", showSingleModal)
             storedBody[tabsList[i]] = bodyList[tabsList[i]]
         }
       }
@@ -248,13 +306,14 @@ var examplesInterface = (function() {
     $('.delete-collection').on("click", deleteCollection);
     $('.save-collection').on("click", saveCollections);
     $('.name-submit').on("click", function() {
-        createCollection($('.collection-name-input')[0].value)
+        createCollection($('.collection-name-input')[0].value);
     });
     $('.collection-name-input').keydown(function(event){
         if(event.keyCode == 13) {
           $('.name-submit').click();
         }
-    })
+    });
+    $('.show-larger').on("click", showCollectionModal);
   }
   exports.setupSelectionPane = setupSelectionPane;
 
