@@ -47,13 +47,14 @@ var iframeMaker = function() {
     $('.modal-footer').empty();
 
     var URL = $(this).parent().parent().find('iframe').attr('src');
+    var quoteURL = "'"+URL+"'"
     console.log(URL)
     commentsList = getEverything().getDisplayedColumns(URL)
     var commentsBox = $('<div class= "commentsBox"><select class="category"></select><button class = "fill-comments btn" onClick = "iframeMaker.fillComments()">View</button></div>')
-    var commentsDisplay = $('<div class= "commentsDisplay"><table class="title"></table><table class="commentsTable table table-striped"><tbody><tr><td>"examples"</td></tr></tbody></table></div>')
+    var commentsDisplay = $('<div class= "commentsDisplay"><table class="title"></table><table class="commentsTable table table-striped"><tbody><tr><td></td></tr></tbody></table></div>')
     var iframeDiv = $('<div class="modal-iframe-holder"></div>')
     var modalIframe = $('<iframe class="modal-iframe" sandbox="" width="1000" height="750" src='+URL+' style="-webkit-transform:scale(0.5);-moz-transform-scale(0.5);">')
-    var URLbutton = $('<button class="btn btn-primary" onclick="window.open('+URL+');">Visit Site</button>')
+    var URLbutton = $('<button class="btn btn-primary" onclick="window.open('+quoteURL+');">Visit Site</button>')
     var closeButton = $('<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>')
     iframeDiv.append(modalIframe)
     

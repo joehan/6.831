@@ -83,14 +83,27 @@ function getEverything(){
     }
     
     var getDisplayedColumns = function(URL){
-        var categoryList = []
+        var displayedList = []
         for (var i=0;i<displayedColumns.length;i++){
             var colNum = displayedColumns[i]
             var colContents = getColumnContents(URL, colNum)
-            categoryList.push(colContents)
+            displayedList.push(colContents)
         } 
-        console.log(categoryList)
-        return categoryList
+        console.log(displayedList)
+        return displayedList
+    }
+    
+    var URLbySearch = function(searchTerm){
+        var searchURLDict = {}
+        for (var i=0;i<categoryColumns.length;i++){
+            for (var key in URLDict){
+                if (URLDict[key][i]==searchTerm){
+                    searchUrlDict[key]=URLDict[key]
+                }
+            }
+        }
+        console.log(searchURLDict)
+        return searchURLDict
     }
                                     
     
