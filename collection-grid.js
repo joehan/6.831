@@ -17,9 +17,9 @@ var JSONURL = 'https://spreadsheets.google.com/feeds/cells/'+googleKey+'/oD6/pub
 // contains functions to set up main collection area and selection pane
 
 // to-do: move larger view of collections to separate tab in main window
-// turn create-a-collection into a modal popup
 // fix layout of larger collection view
 // show all comments at once
+// maxe delete button an "x" on the tabs themselves.
 // look into parse as a storage thingy.
 var examplesInterface = (function() {
 
@@ -40,8 +40,14 @@ var examplesInterface = (function() {
 
     // gives collection index #
     var collectionNumber = $('.collections').children().length;
+    var count = 1
 
     if (maxCollections  > collectionNumber) {
+
+      while ($('.collection'+collectionNumber).length > 0) {
+        collectionNumber += 1
+        count += 1
+      }
 
       storedNamesList.push(name);
 
@@ -51,7 +57,7 @@ var examplesInterface = (function() {
       $('.collection-name').css("visibility", "hidden");
 
       // HTML skeleton for new collection body
-      var newTab = $('<li><a class=collection'+collectionNumber+' href=#collection'+collectionNumber+' data-toggle="tab"><input class="tab-name-input" type="text" placeholder="'+name+'" style="border: none; box-shadow: none; background-color: transparent;"></input></a></li)');
+      var newTab = $('<li><a class=collection'+collectionNumber+' href=#collection'+collectionNumber+' data-toggle="tab"><input class="tab-name-input" type="text" placeholder="'+name+'" style="border: none; box-shadow: none; background-color: transparent;"></input><button class="btn delete">×</button></a></li)');
       var newTabBody = $('<div id=collection'+collectionNumber+' class="tab-pane"></div>')
       var newSortable = $('<ul id="sortable'+collectionNumber+'" class="connected'+collectionNumber+' group"></ul>')
       newTabBody.append(newSortable);
@@ -67,10 +73,14 @@ var examplesInterface = (function() {
         if(event.keyCode == 13) {
           newName = $('.collection'+collectionNumber+' .tab-name-input').val();
           $('.collection'+collectionNumber+' .tab-name-input').blur();
-          storedNamesList.splice(collectionNumber-1, 1, newName);
+          storedNamesList.splice(collectionNumber-count, 1, newName);
           saveCollections();
         }
       });
+
+      $('.collection'+collectionNumber+' .delete').on('click', function() {
+          deleteCollection(this);
+      })
 
       // bind drop function to any iframe dropped into the collection, needed because onclick handlers
       // unbind when the object is moved
@@ -91,40 +101,36 @@ var examplesInterface = (function() {
 
   // puts content of collections into localStorage
   var saveCollections = function() {
+    storedNamesList
 
     // put collection names into storage
     localStorage['collection'] = JSON.stringify(storedNamesList);
 
     // put body content into storage
-    localStorage['collectionBody'] = JSON.stringify(storedBody)
+    localStorage['collectionBody'] = JSON.stringify(storedBody);
   }
 
   // deletes current collection and returns items to main pane. 
-  var deleteCollection = function() {
+  var deleteCollection = function(button) {
     
     // variables to hold information about the active tab
-    var activeTab = $('.collections .active').children().attr('class');
-    var activeTabIndex = activeTab[activeTab.length - 1]
-    
-    // delete function will only run if there is an active tab, which is the tab that it deletes
-    if ($('.collections .active') !== []) {
+    var collection = $(button).parent().attr('class')
+    var collectionIndex = $('.'+collection).parent().index()
 
-      // remove all HTML elements associated with the active tab
-      $($(document.getElementById(activeTab)).children()).remove();
-      $(document.getElementById(activeTab)).remove();
-      $($("."+activeTab).parent()).remove();
-      $("."+activeTab).remove();
+    // remove all HTML elements associated with the active tab
+    $($(document.getElementById(collection)).children()).remove();
+    $(document.getElementById(collection)).remove();
+    $($("."+collection).parent()).remove();
+    $("."+collection).remove();
 
-      // shift list of all tabs' content down by one to account for a deletion in the middle of the list of tabs
-      for (var i = activeTabIndex; i < maxCollections; i++) {
-        storedBody["sortable"+(i)] = storedBody["sortable"+parseInt(i+1)]
-      }
+    // shift list of all tabs' content down by one to account for a deletion in the middle of the list of tabs
+    for (var i = collectionIndex; i < maxCollections; i++) {
+      storedBody["sortable"+(i)] = storedBody["sortable"+parseInt(i+1)];
+    }
 
-      // remove deleted collection name from storedNamesList
-      storedNamesList.splice(activeTabIndex, 1)
-
-    } 
-
+    // remove deleted collection name from storedNamesList
+    storedNamesList.splice(collectionIndex - 1, 1);
+    saveCollections();
   }
 
   // takes two arguments to allow for more than one comments box to appear
@@ -132,11 +138,8 @@ var examplesInterface = (function() {
   // URL is the URL associated with the comments table, allow us to access the comments list
   // for that specific comments table.
   var fillComments = function(num, URL){
-      console.log(URL)
       var value = $('.category'+num).val();
-      console.log(value)
       var commentsList = getEverything().getDisplayedColumns(URL)
-      console.log(commentsList)
       $('.commentsTable'+num).empty()
       for (var i=0;i<commentsList.length;i++){
           if (commentsList[i][0] == value){
@@ -259,7 +262,7 @@ var examplesInterface = (function() {
   var setupSelectionPane = function(div) {
 
     // html elements for selection pane skeleton
-    var buttons = $('<button class="btn delete-collection">Delete Collection</button><button class="btn save-collection">Save</button></div>');
+    var buttons = $('<button class="btn save-collection">Save</button></div>');
     //var collectionNaming = $('<div class="collection-name"><input type="text" class="collection-name-input" placeholder="Collection name"></input><button class="btn name-submit">Create</button></div>');
     var collectionTabs = $('<div class="tabbable collection-tabs"><ul class="nav nav-tabs collections"><li><a href="#"><i class="new-tab icon-plus"></i></a></li></ul><div class="collections-content tab-content"></div></div>');
     //var alert = $('<div class="collection-alert alert alert-error">Please enter a different name.</div>')
