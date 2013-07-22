@@ -109,7 +109,7 @@ function getEverything(){
     
     //URLbySearch is work in progress right now. IT will be used for a filtering function
     var URLbySearch = function(searchTerm){
-        var searchURLList = []
+        var searchURLList = ['searchTerm']
         for (var i=0;i<categoryColumns.length;i++){
             for (var key in URLDict){
                 var look=URLDict[key][i][categoryColumns[0]]

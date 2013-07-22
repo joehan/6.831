@@ -1,3 +1,7 @@
+body{
+    overflow:hidden;
+}
+
 .description {
 	margin: 3px;
 
@@ -81,7 +85,7 @@
 }
 
 #sortable-main {
-	height: 700px;
+	height: 100%;
 	overflow-x: hidden;
 	overflow-y: scroll;
 }
@@ -91,11 +95,16 @@
 }
 
 .main-grouping {
+    height:95%;
 	border: 5px solid black;
+    position:relative;
+    top:-15px;
 }
 
 .select-grouping {
-	height: 720px;
+    position:relative;
+    top:-15px;
+	height: 95%;
 	border: 5px solid black;
 	overflow-x: hidden;
 	overflow-y: hidden;
@@ -145,7 +154,7 @@
 
 .commentsDisplay {
 	height: 140px;
-	overflow: scroll;
+	overflow: auto;
 	margin: 10px;
 }
 
@@ -183,4 +192,18 @@ body .delete {
     position:relative;
     top:5px;
     left:-5px;
+}
+.title{
+    position:relative;
+    left:5px;   
+}
+
+.keyName{
+    position:relative;
+    float:left;
+}
+
+.keyCount{
+    position:relative;
+    float:right;
 }
