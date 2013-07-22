@@ -23,6 +23,14 @@ var JSONURL = 'https://spreadsheets.google.com/feeds/cells/'+googleKey+'/oD6/pub
 // look into parse as a storage thingy.
 var examplesInterface = (function() {
 
+  Parse.initialize("EAZLne6WusMuwh67shifh4saiDh4Y9q5rVYcgPrG", "Spq8SBS6pChLouqFmJY4bDgiRVAHtDh0luJzoMiQ");
+
+  var CollectionData = Parse.Object.extend('collectionData');
+  var CollectionName = Parse.Object.extend('collectionName')
+  var CollectionContent = Parse.Object.extend('collectionContent')
+  var collectionData = new CollectionData
+  collectionData.set('source', 'Bad Websites')
+
   // variables for storage of collections
   var storedNamesList = [];
   var storedBody = {};
@@ -67,6 +75,10 @@ var examplesInterface = (function() {
 
       if (name !== "untitled") {
         $('.collection'+collectionNumber+' .tab-name-input').val(name);
+        var nameClass = name.replace(/\s+/g,"");
+        $('#sortable'+collectionNumber).addClass(nameClass)
+      } else {
+        $('.collection'+collectionNumber+' input').focus();
       }
 
       $('.collection'+collectionNumber+' .tab-name-input').keydown(function(event){
@@ -74,7 +86,7 @@ var examplesInterface = (function() {
           newName = $('.collection'+collectionNumber+' .tab-name-input').val();
           $('.collection'+collectionNumber+' .tab-name-input').blur();
           storedNamesList.splice(collectionNumber-count, 1, newName);
-          saveCollections();
+          saveName(newName);
         }
       });
 
@@ -87,7 +99,14 @@ var examplesInterface = (function() {
       $('#sortable'+collectionNumber).sortable({
         stop: function(event, ui) {
           storedBody["sortable"+collectionNumber] = $("#sortable"+collectionNumber).html()
-          saveCollections();
+          var collection = $('.collection'+collectionNumber+' input').val().replace(/\s+/g,"")
+          var tempcontent = $(ui.item[0]).clone()
+          var tempparent = $('<div class = "temp"></div>')
+          tempparent.append(tempcontent)
+          var content = tempparent.html()
+
+          saveContent(collection, content);
+          $('.temp').remove()
         }
         }).disableSelection().droppable({
         drop: function(event, ui) {
@@ -99,15 +118,30 @@ var examplesInterface = (function() {
     }
   }
 
-  // puts content of collections into localStorage
+  var saveName = function(name) {
+    var savedName = new CollectionName;
+    savedName.set('source', 'Bad Websites')
+    savedName.set('name', name)
+    savedName.save(null)
+  }
+
+  var saveContent = function(collection, content) {
+    var savedContent = new CollectionContent
+    savedContent.set('source', 'Bad Websites')
+    var data = {}
+    data[collection] = content
+    savedContent.set('data', data)
+    savedContent.save(null)
+  }
+
+  // puts content of collections onto Parse
   var saveCollections = function() {
-    storedNamesList
-
-    // put collection names into storage
-    localStorage['collection'] = JSON.stringify(storedNamesList);
-
-    // put body content into storage
-    localStorage['collectionBody'] = JSON.stringify(storedBody);
+    collectionData.save(null, {
+      success: function() {
+        collectionData.set('collection', storedNamesList)
+        collectionData.set('collectionBody', storedBody)
+      }
+    })
   }
 
   // deletes current collection and returns items to main pane. 
@@ -236,25 +270,25 @@ var examplesInterface = (function() {
 
     div.append(singleModal);
     
-    // create iframe, overlay, and link to modal for each URL
-    for (i=1;i<URLList.length;i++) {
-			
-      var link = $('<a data-toggle="modal" data-target="#myModal"></a>')
-      var li = $('<li class = "iframe ui-state-default">')
-			var overlay = $('<div class="overlay"></div>')
-			var iframe = $('<iframe class="body-iframe" sandbox="" width="1000" height="750" src='+URLList[i]+' style="-webkit-transform:scale(0.25);-moz-transform-scale(0.25);">')
+   // create iframe, overlay, and link to modal for each URL
+   // for (i=1;i<URLList.length;i++) {
+  for (i=1;i<5;i++) {
+     var link = $('<a data-toggle="modal" data-target="#myModal"></a>')
+     var li = $('<li class = "iframe ui-state-default">')
+	 	 var overlay = $('<div class="overlay"></div>')
+	 	 var iframe = $('<iframe class="body-iframe" sandbox="" width="1000" height="750" src='+URLList[i]+' style="-webkit-transform:scale(0.25);-moz-transform-scale(0.25);">')
 
-			link.append(overlay)
-      overlay.on("click", showSingleModal)
-      li.append(link, iframe)
-			div.append(li)
+	 	 link.append(overlay)
+     overlay.on("click", showSingleModal)
+     li.append(link, iframe)
+	 	 div.append(li)
 
-      $('.iframe').draggable({ 
-        helper: "clone",
-        connectToSortable: '.group'
-      });
+     $('.iframe').draggable({ 
+       helper: "clone",
+       connectToSortable: '.group'
+     });
 
-		}
+	 }
 	}
 	exports.setupExamples = setupExamples;
 
@@ -263,11 +297,8 @@ var examplesInterface = (function() {
 
     // html elements for selection pane skeleton
     var buttons = $('<button class="btn save-collection">Save</button></div>');
-    //var collectionNaming = $('<div class="collection-name"><input type="text" class="collection-name-input" placeholder="Collection name"></input><button class="btn name-submit">Create</button></div>');
     var collectionTabs = $('<div class="tabbable collection-tabs"><ul class="nav nav-tabs collections"><li><a href="#"><i class="new-tab icon-plus"></i></a></li></ul><div class="collections-content tab-content"></div></div>');
-    //var alert = $('<div class="collection-alert alert alert-error">Please enter a different name.</div>')
     var showLarger = $('<div><button class="btn show-larger" data-toggle="modal" data-target="#collectionModal">Show Larger</button></div>');
-    //collectionNaming.append(alert)
 
     div.append(buttons, showLarger, collectionTabs);
 
@@ -285,58 +316,66 @@ var examplesInterface = (function() {
 
     div.append(collectionModal);
 
-    var collectionNameModal = '<div id="collectionNameModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'
-               +  '<div class="modal-header">'
-               +    '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>'
-               +    '<h3 id="collectionNameModalLabel">New Collection</h3>'
-               +  '</div>'
-               +  '<div class="modal-body">'
-               +  '<div class="collection-name"><input type="text" class="collection-name-input" placeholder="Collection name"></input><button class="btn name-submit">Create</button></div>'
-               +  '<div class="collection-alert alert alert-error">Please enter a different name.</div>'
-               +  '</div>'
-               +  '<div class="modal-footer">'
-               +  '</div>'
-               +'</div>';
-    
-    div.append(collectionNameModal);
+    var nameQuery = new Parse.Query(CollectionName);
+    var namesList = []
 
-    // check localStorage for collections, if they exist, use them
-    if (localStorage['collection'] !== undefined) {
-      
-      namesList = JSON.parse(localStorage['collection']);
+    nameQuery.equalTo('source', 'Bad Websites');
+    nameQuery.find({
+      success: function(nameResults) {
 
-      for (var i = 0; i < namesList.length; i++) {
-          createCollection(namesList[i]);
+        var contentQuery = new Parse.Query(CollectionContent);
+        var content = {}
+
+        contentQuery.equalTo('source', 'Bad Websites');
+        contentQuery.find({
+
+          success: function(contentResults) {
+            
+            for (var i = 0; i < nameResults.length; i++) {
+              var object = nameResults[i];
+              if (object.get('name') !== undefined && namesList.indexOf(object.get('name') == -1)) {
+                namesList.push(object.get('name'));
+              }
+            }
+
+            for (var i = namesList.length-1; i >= 0; i--) {
+                createCollection(namesList[i]);
+            }
+
+            for (var i = 0; i < contentResults.length; i++) {
+              
+              var object = contentResults[i]
+              if (object.get('data') !== undefined) {
+                
+                for (var name in object.get('data')) {
+                  if (content[name] !== undefined && object.get('data')[name] !== undefined) {
+                    if (content[name].indexOf($(object.get('data')[name]).find('iframe').prop('src')) == -1) {
+                      content[name] += object.get('data')[name];
+                    }
+                  } else {
+                    content[name] = object.get('data')[name];
+                  }
+                }
+              }
+            }
+            for (var collection in content) {
+              $('.'+collection).html(content[collection]);
+              $('li').css('display', 'inline');
+              $('.ui-sortable-placeholder').css('display', 'none');
+              $('.overlay').on("click", showSingleModal);
+            }
+          }
+        })
+
       }
+    })
 
-
-      if (localStorage['collectionBody'] !== undefined) {
-        tabsList = $('.collections-content').find('.group').map( function() {
-          return this.id
-        }).get();
-
-        bodyList = JSON.parse(localStorage['collectionBody']);
-
-
-        for (var i = 0; i < tabsList.length; i++) {
-            $('#'+tabsList[i]).html(bodyList[tabsList[i]]);
-            $('li').css('display', 'inline')
-            $('.ui-sortable-placeholder').css('display', 'none')
-            $(".overlay").on("click", showSingleModal)
-            storedBody[tabsList[i]] = bodyList[tabsList[i]]
-        }
-      }
-    }
 
     // attach click handlers to buttons + enter handler to input box
     $('.new-tab').on("click", function() {
         createCollection("untitled")
     });
-    $('.delete-collection').on("click", deleteCollection);
     $('.save-collection').on("click", saveCollections);
-    // $('.name-submit').on("click", function() {
-    //     createCollection($('.collection-name-input')[0].value);
-    // });
     $('.collection-name-input').keydown(function(event){
         if(event.keyCode == 13) {
           $('.name-submit').click();
