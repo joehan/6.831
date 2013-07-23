@@ -100,12 +100,10 @@ var examplesInterface = (function() {
         drop: function(event, ui) {
           $(".overlay").on("click", showSingleModal)
           var collection = $('.collection'+collectionNumber+' input').val().replace(/\s+/g,"")
-          console.log(ui)
           var tempcontent = $(ui.draggable[0]).clone()
           var tempparent = $('<div class = "temp"></div>')
           tempparent.append(tempcontent)
           var content = tempparent.html()
-          console.log(event)
           saveContent(collection, content);
           $('.temp').remove()
         }
@@ -144,10 +142,8 @@ var examplesInterface = (function() {
     // delete all examples in the collection that have that URL
     for (var i = 0; i < URLtoID[URL].length; i++) {
       var ID = URLtoID[URL][i]
-      console.log(ID)
       itemQuery.get(ID, {
         success: function(collectionContent) {
-          console.log(collectionContent.id)
           if (collection == Object.keys(collectionContent.get('data'))[0]) {
             collectionContent.destroy()
           }
@@ -294,7 +290,8 @@ var examplesInterface = (function() {
     div.append(singleModal);
     
    // create iframe, overlay, and link to modal for each URL
-    for (i=1;i<URLList.length;i++) {
+    // for (i=1;i<URLList.length;i++) {
+      for (i=1;i<5;i++) {
        var link = $('<a data-toggle="modal" data-target="#myModal"></a>')
        var li = $('<li class = "iframe ui-state-default">')
   	 	 var overlay = $('<div class="overlay"></div>')
@@ -313,6 +310,97 @@ var examplesInterface = (function() {
 	 }
 	}
 	exports.setupExamples = setupExamples;
+
+  var buildCollectionsFromParse = function() {
+    // code to pull existing collections from Parse
+    var namesList = []
+    var nameQuery = new Parse.Query(CollectionName);
+    var currentCollections = $('.tab-name-input').map(function(tab) {
+      return $(this).val();
+    }).get()
+
+    // find all collections connected to this specific google doc
+    nameQuery.equalTo('source', googleKey);
+    nameQuery.find({
+      success: function(nameResults) {
+
+        var contentQuery = new Parse.Query(CollectionContent);
+
+        // find all content connected to this specific google doc
+        var content = {}
+        contentQuery.equalTo('source', googleKey);
+        contentQuery.find({
+
+          success: function(contentResults) {
+            
+            // create a list of collection names and begin to store Parse IDs
+            for (var i = 0; i < nameResults.length; i++) {
+              var object = nameResults[i];
+              if (object.get('name') !== undefined && namesList.indexOf(object.get('name') == -1)) {
+                namesList.push(object.get('name'));
+                nameToID[object.get('name')] = object.id
+                nameToContentIDs[object.get('name')] = []
+              }
+            }
+
+            var newCollections = []
+            for (var i = 0; i < namesList.length; i++) {
+              if (currentCollections.indexOf(namesList[i]) == -1) {
+                newCollections.push(namesList[i])
+              }
+
+            }
+
+            // create a collection for each name in newCollections
+            for (var i = 0; i < newCollections.length; i++) {
+                createCollection(newCollections[i]);
+            }
+
+            // code to fill content
+            for (var i = 0; i < contentResults.length; i++) {
+              
+              var object = contentResults[i]
+              if (object.get('data') !== undefined) {
+                
+                for (var name in object.get('data')) {
+                  var currentURLs = $('.'+name).find('iframe').map(function(){return $(this).prop('src')}).get()
+                  var URL = $(object.get('data')[name]).find('iframe').prop('src')
+                  if (content[name] !== undefined && object.get('data')[name] !== undefined) {
+                    if (content[name].indexOf(URL) == -1 && currentURLs.indexOf(URL) == -1) {
+                      content[name] += object.get('data')[name];
+                      URLtoID[URL] = [object.id]
+                    } else {
+                      if (URLtoID[URL] == undefined){
+                        URLtoID[URL] = [];
+                      }
+                      URLtoID[URL].push(object.id)
+                    }
+                  } else {
+                    if (currentURLs.indexOf(URL) == -1) {
+                      content[name] = object.get('data')[name];
+                    }
+                    URLtoID[URL] = [object.id]
+                  }
+                  nameToContentIDs[name].push(object.id)
+                }
+              }
+            }
+
+            // insert content into collections
+            for (var collection in content) {
+              var currentHTML = $('.'+collection).html();
+              $('.'+collection).html(content[collection]+currentHTML);
+              $('li').css('display', 'inline');
+              $('.ui-sortable-placeholder').css('display', 'none');
+              $('.overlay').on("click", showSingleModal);
+            }
+          }
+        })
+
+      }
+    })
+
+  }
 
   // set up area for collections of select examples
   var setupSelectionPane = function(div) {
@@ -338,78 +426,7 @@ var examplesInterface = (function() {
 
     div.append(collectionModal);
 
-    // code to pull existing collections from Parse
-    var nameQuery = new Parse.Query(CollectionName);
-    var namesList = []
-
-    // find all collections connected to this specific google doc
-    nameQuery.equalTo('source', googleKey);
-    nameQuery.find({
-      success: function(nameResults) {
-
-        var contentQuery = new Parse.Query(CollectionContent);
-        var content = {}
-
-        // find all content connected to this specific google doc
-        contentQuery.equalTo('source', googleKey);
-        contentQuery.find({
-
-          success: function(contentResults) {
-            
-            // create a list of collection names and begin to store Parse IDs
-            for (var i = 0; i < nameResults.length; i++) {
-              var object = nameResults[i];
-              if (object.get('name') !== undefined && namesList.indexOf(object.get('name') == -1)) {
-                namesList.push(object.get('name'));
-                nameToID[object.get('name')] = object.id
-                nameToContentIDs[object.get('name')] = []
-              }
-            }
-
-            // create a collection for each name in namesList
-            for (var i = namesList.length-1; i >= 0; i--) {
-                createCollection(namesList[i]);
-            }
-
-            // code to fill content
-            for (var i = 0; i < contentResults.length; i++) {
-              
-              var object = contentResults[i]
-              if (object.get('data') !== undefined) {
-                
-                for (var name in object.get('data')) {
-                  var URL = $(object.get('data')[name]).find('iframe').prop('src')
-                  if (content[name] !== undefined && object.get('data')[name] !== undefined) {
-                    if (content[name].indexOf(URL) == -1) {
-                      content[name] += object.get('data')[name];
-                      URLtoID[URL] = [object.id]
-                      console.log(URLtoID)
-                    } else {
-                      URLtoID[URL].push(object.id)
-                    }
-                  } else {
-                    content[name] = object.get('data')[name];
-                    URLtoID[URL] = [object.id]
-                  }
-                  nameToContentIDs[name].push(object.id)
-                  console.log(nameToContentIDs)
-                }
-              }
-            }
-
-            // insert content into collections
-            for (var collection in content) {
-              $('.'+collection).html(content[collection]);
-              $('li').css('display', 'inline');
-              $('.ui-sortable-placeholder').css('display', 'none');
-              $('.overlay').on("click", showSingleModal);
-            }
-          }
-        })
-
-      }
-    })
-
+    updateCollections();
 
     // attach click handlers to buttons + enter handler to input box
     $('.new-tab').on("click", function() {
@@ -482,7 +499,13 @@ var examplesInterface = (function() {
       }
       
   }
-  
+
+  var updateCollections = function() {
+    examplesInterface.buildCollectionsFromParse();
+    setTimeout(updateCollections, 15000);
+  }
+
+    exports.buildCollectionsFromParse = buildCollectionsFromParse;
     exports.setupInterface = setupInterface;
     exports.fillComments = fillComments;
     exports.fillFilterBar= fillFilterBar;
@@ -491,7 +514,7 @@ var examplesInterface = (function() {
 })();
 
 var JSONdata 
-    
+
     
 $.getJSON(JSONURL, function(data) {
         JSONdata=data
@@ -502,5 +525,5 @@ $.getJSON(JSONURL, function(data) {
                           examplesInterface.setupInterface($(this));
                       });
                       examplesInterface.fillFilterBar()
-
+                      
       })
