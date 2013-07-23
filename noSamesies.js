@@ -3,6 +3,9 @@ var getURLVars = function() {
     var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
         vars[key] = value;
     });
+    if (vars['googleKey']==undefined){
+        window.location = 'frontend.html'
+    }
     return vars;
 }
 var googleKey = getURLVars()['googleKey']

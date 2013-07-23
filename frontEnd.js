@@ -5,7 +5,7 @@ var buildInputs = function(){
     var keyInput = $('<div>Published Google Doc URL <input type="text" class="key"></input></div>')
     var categoryColInput = $('<div>Filter Column<input type="text" class="category"></input>Numbers seprated by commas, please</div>')
     var displayedColInput = $('<div>Comment Columns<input type="text" class="displayed"></input>Which columns do you want to be viewable as comments? Input letters, split by commas with no spaces</div>')
-    var submitButton = $('<button class="submit" onClick="getInputContents()">Submit</button>')
+    var submitButton = $('<button class="btn submit" onClick="getInputContents()">View Sites!</button>')
     
     $('.inputsDiv').append(keyInput)
         .append(categoryColInput)
@@ -25,7 +25,7 @@ var getInputContents = function(){
 
     var URLQuery = '?googleKey='+googleKey+'&sheet=od6&category='+category+'&displayed='+displayed+'&end=true'
     console.log(URLQuery)
-    $('.inputsDiv').append($('<div>Now, just append the following text to the end of the URL of the viewer:</div><div>'+URLQuery+'</div>'))
+    window.location = 'collection-grid-single.html'+URLQuery
 }
 
 

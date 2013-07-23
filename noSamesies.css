@@ -116,10 +116,14 @@ body{
 
 #myModal {
 	z-index: 250000;
+    height:80%;
+    position:relative;
+    top:50px;
 }
 
 #collectionModal {
 	z-index: 200000;
+    height:80%;
 }
 
 .commentsTable{
