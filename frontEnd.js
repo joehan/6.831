@@ -25,7 +25,7 @@ var getInputContents = function(){
 
     var URLQuery = '?googleKey='+googleKey+'&sheet=od6&category='+category+'&displayed='+displayed+'&end=true'
     console.log(URLQuery)
-    window.location = 'collection-grid-single.html'+URLQuery
+    window.location = 'collection-grid.html'+URLQuery
 }
 
 

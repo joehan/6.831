@@ -21,6 +21,7 @@ function getEverything(){
      //parseData takes the results of getValues, and turns it into an associative array called items. THe keys of this array are row numbers, and the values are arrays, where each item is the contents of 1 cell in that row.   
     var parseData = function(){
         getValues()
+        items={}
         for (i=0;i<valueHolder.length;i++){
               var rowNumber = valueHolder[i].title.$t.slice(1)
               if (items[rowNumber] == undefined){
@@ -59,7 +60,15 @@ function getEverything(){
                 URLDict[newKey]=[items[key]]
             }
             else{
-                 URLDict[newKey].push(items[key])
+                var alreadyIn = false
+                for (var i=0;i<URLDict[newKey].length;i++){
+                    if (URLDict[newKey][i] == items[key]){
+                        alreadyIn=true
+                    }
+                }
+                if (alreadyIn==false){
+                    URLDict[newKey].push(items[key])
+                }
             }
             
         }
