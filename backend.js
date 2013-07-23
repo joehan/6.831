@@ -107,7 +107,7 @@ function getEverything(){
         return translatedArray
     }
     
-    //URLbySearch is work in progress right now. IT will be used for a filtering function
+    //URLbySearch takes a search term, and returns a list of URL's that have that search term in their category column. It is sed for filtering.
     var URLbySearch = function(searchTerm){
         var searchURLList = ['searchTerm']
         for (var i=0;i<categoryColumns.length;i++){
