@@ -3,13 +3,16 @@ var getURLVars = function() {
     var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
         vars[key] = value;
     });
+    if (vars['googleKey']==undefined){
+        window.location = 'frontend.html'
+    }
     return vars;
 }
 var googleKey = getURLVars()['googleKey']
 var category = getURLVars()['category'].split(',')
 var displayed = getURLVars()['displayed'].split(',')
-displayedColumns = displayed
-categoryColumns = category
+displayedColumns = getEverything().letterArrayToNumber(displayed)
+categoryColumns = getEverything().letterArrayToNumber(category)
 
 
 var JSONURL = 'https://spreadsheets.google.com/feeds/cells/'+googleKey+'/oD6/public/basic?alt=json'
@@ -218,6 +221,7 @@ var examplesInterface = (function() {
 
     var URL = $(this).parent().parent().find('iframe').attr('src');
     var quoteURL = "'"+URL+"'"
+    var baseURL = URL.split('/')[2]
     var commentsList = getEverything().getDisplayedColumns(URL)
     var commentsBox = $('<div class= "commentsBox"><select class="category0"></select><button class = "fill-comments btn" onClick = "examplesInterface.fillComments(0, '+quoteURL+')">View</button></div>')
     var commentsDisplay = $('<div class= "commentsDisplay"><table class="title"></table><table class="commentsTable0 table table-striped"><tbody></tbody></table></div>')
@@ -226,7 +230,7 @@ var examplesInterface = (function() {
     var URLbutton = $('<button class="btn btn-primary" onclick="window.open('+quoteURL+');">Visit Site</button>')
     var closeButton = $('<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>')
     iframeDiv.append(modalIframe)
-    
+    $('#myModalLabel').text(baseURL)
     $('#myModal .modal-body').append(iframeDiv).append(commentsBox).append(commentsDisplay)
     $('#myModal .modal-footer').append(closeButton, URLbutton)
     for (var i=0;i<commentsList.length;i++){
@@ -442,9 +446,48 @@ var examplesInterface = (function() {
     setupExamples($('#sortable-main'));
     setupSelectionPane($('.select-grouping'));
   }
-  exports.setupInterface = setupInterface;
-  exports.fillComments = fillComments
-	return exports;
+
+  var fillFilterBar = function(){
+      var selectDict={}
+      var col = categoryColumns[0];
+      for (var key in URLDict){
+          for (var j=0;j<URLDict[key].length;j++){
+              if (key=='http://URL'){
+              }
+              else if (selectDict[URLDict[key][j][col]]==undefined){
+                  selectDict[URLDict[key][j][col]] = 1
+              }
+              else{
+                  selectDict[URLDict[key][j][col]] += 1
+              }
+          }    
+      }
+      for (key in selectDict){
+          $('.filter').append('<option>'+key+'</option>')
+      }
+  }
+  
+  var handleFilterBar = function(){
+      var filterValue = $('.filter').val().split(':')[0]
+      var newList = getEverything().URLbySearch(filterValue)
+      if (filterValue == 'All'){
+          getEverything().getURLList()
+          $('.connected-main').empty()
+          setupExamples($('.connected-main'))
+      }
+      else{
+          URLList = newList
+          $('.connected-main').empty()
+          setupExamples($('.connected-main'))
+      }
+      
+  }
+  
+    exports.setupInterface = setupInterface;
+    exports.fillComments = fillComments;
+    exports.fillFilterBar= fillFilterBar;
+    exports.handleFilterBar = handleFilterBar;
+    return exports;
 })();
 
 var JSONdata 
@@ -456,9 +499,8 @@ $.getJSON(JSONURL, function(data) {
                       getEverything().getURLList();
 
                       $('.example-holder').each(function() {
-		                      examplesInterface.setupInterface($(this));
-	                    });
-                      
+                          examplesInterface.setupInterface($(this));
+                      });
+                      examplesInterface.fillFilterBar()
 
       })
-
