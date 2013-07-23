@@ -29,11 +29,17 @@ var examplesInterface = (function() {
   var CollectionName = Parse.Object.extend('collectionName')
   var CollectionContent = Parse.Object.extend('collectionContent')
   var collectionData = new CollectionData
-  collectionData.set('source', 'Bad Websites')
+  collectionData.set('source', googleKey)
+
+  var itemQuery = new Parse.Query(CollectionContent)
+  var collectionQuery = new Parse.Query(CollectionName)
 
   // variables for storage of collections
   var storedNamesList = [];
   var storedBody = {};
+  var URLtoID = {};
+  var nameToID = {};
+  var nameToContentIDs = {};
 
   // arbitrary max number of collections, changable
   var maxCollections = 5;
@@ -99,20 +105,19 @@ var examplesInterface = (function() {
       $('#sortable'+collectionNumber).sortable({
         stop: function(event, ui) {
           storedBody["sortable"+collectionNumber] = $("#sortable"+collectionNumber).html()
-          var collection = $('.collection'+collectionNumber+' input').val().replace(/\s+/g,"")
-          var tempcontent = $(ui.item[0]).clone()
-          var tempparent = $('<div class = "temp"></div>')
-          tempparent.append(tempcontent)
-          var content = tempparent.html()
-
-          saveContent(collection, content);
-          $('.temp').remove()
         }
         }).disableSelection().droppable({
         drop: function(event, ui) {
           $(".overlay").on("click", showSingleModal)
-          storedBody["sortable"+collectionNumber] = ui.draggable.parent().html()
-          saveCollections();
+          var collection = $('.collection'+collectionNumber+' input').val().replace(/\s+/g,"")
+          console.log(ui)
+          var tempcontent = $(ui.draggable[0]).clone()
+          var tempparent = $('<div class = "temp"></div>')
+          tempparent.append(tempcontent)
+          var content = tempparent.html()
+          console.log(event)
+          saveContent(collection, content);
+          $('.temp').remove()
         }
         });
     }
@@ -120,35 +125,59 @@ var examplesInterface = (function() {
 
   var saveName = function(name) {
     var savedName = new CollectionName;
-    savedName.set('source', 'Bad Websites')
+    savedName.set('source', googleKey)
     savedName.set('name', name)
     savedName.save(null)
   }
 
   var saveContent = function(collection, content) {
     var savedContent = new CollectionContent
-    savedContent.set('source', 'Bad Websites')
+    savedContent.set('source', googleKey)
     var data = {}
     data[collection] = content
     savedContent.set('data', data)
     savedContent.save(null)
   }
 
-  // puts content of collections onto Parse
-  var saveCollections = function() {
-    collectionData.save(null, {
-      success: function() {
-        collectionData.set('collection', storedNamesList)
-        collectionData.set('collectionBody', storedBody)
-      }
-    })
+  var deleteItem = function(ui) {
+    var activeTab = $('.collections .active').children().attr('class');
+    var activeTabIndex = activeTab[activeTab.length - 1]
+    var URL = $(ui.draggable[0]).find('iframe').prop('src')
+    var collection = $('.collections .active input').val()
+    for (var i = 0; i < URLtoID[URL].length; i++) {
+      var ID = URLtoID[URL][i]
+      console.log(ID)
+      itemQuery.get(ID, {
+        success: function(collectionContent) {
+          console.log(collectionContent.id)
+          if (collection == Object.keys(collectionContent.get('data'))[0]) {
+            collectionContent.destroy()
+          }
+        }
+        })
+    }
+
+    $(ui.draggable).remove();
+    storedBody["sortable"+activeTabIndex] = $("#sortable"+activeTabIndex).html()
   }
+
+  // // puts content of collections onto Parse
+  // var saveCollections = function() {
+  //   collectionData.save(null, {
+  //     success: function() {
+  //       collectionData.set('collection', storedNamesList)
+  //       collectionData.set('collectionBody', storedBody)
+  //     }
+  //   })
+  // }
 
   // deletes current collection and returns items to main pane. 
   var deleteCollection = function(button) {
     
     // variables to hold information about the active tab
     var collection = $(button).parent().attr('class')
+    var collectionName = $(button).parent().find('input').val()
+    var ID = nameToID[collectionName]
     var collectionIndex = $('.'+collection).parent().index()
 
     // remove all HTML elements associated with the active tab
@@ -161,10 +190,21 @@ var examplesInterface = (function() {
     for (var i = collectionIndex; i < maxCollections; i++) {
       storedBody["sortable"+(i)] = storedBody["sortable"+parseInt(i+1)];
     }
+    for (var i = 0; i < nameToContentIDs[collectionName].length; i++) {
+      itemQuery.get(nameToContentIDs[collectionName][i], {
+        success: function(item) {
+          item.destroy()
+        }
+      })
+    }
+    collectionQuery.get(ID, {
+      success: function(collectionName) {
+        collectionName.destroy()
+      }
+    })
 
     // remove deleted collection name from storedNamesList
     storedNamesList.splice(collectionIndex - 1, 1);
-    saveCollections();
   }
 
   // takes two arguments to allow for more than one comments box to appear
@@ -319,14 +359,14 @@ var examplesInterface = (function() {
     var nameQuery = new Parse.Query(CollectionName);
     var namesList = []
 
-    nameQuery.equalTo('source', 'Bad Websites');
+    nameQuery.equalTo('source', googleKey);
     nameQuery.find({
       success: function(nameResults) {
 
         var contentQuery = new Parse.Query(CollectionContent);
         var content = {}
 
-        contentQuery.equalTo('source', 'Bad Websites');
+        contentQuery.equalTo('source', googleKey);
         contentQuery.find({
 
           success: function(contentResults) {
@@ -335,6 +375,8 @@ var examplesInterface = (function() {
               var object = nameResults[i];
               if (object.get('name') !== undefined && namesList.indexOf(object.get('name') == -1)) {
                 namesList.push(object.get('name'));
+                nameToID[object.get('name')] = object.id
+                nameToContentIDs[object.get('name')] = []
               }
             }
 
@@ -348,13 +390,21 @@ var examplesInterface = (function() {
               if (object.get('data') !== undefined) {
                 
                 for (var name in object.get('data')) {
+                  var URL = $(object.get('data')[name]).find('iframe').prop('src')
                   if (content[name] !== undefined && object.get('data')[name] !== undefined) {
-                    if (content[name].indexOf($(object.get('data')[name]).find('iframe').prop('src')) == -1) {
+                    if (content[name].indexOf(URL) == -1) {
                       content[name] += object.get('data')[name];
+                      URLtoID[URL] = [object.id]
+                      console.log(URLtoID)
+                    } else {
+                      URLtoID[URL].push(object.id)
                     }
                   } else {
                     content[name] = object.get('data')[name];
+                    URLtoID[URL] = [object.id]
                   }
+                  nameToContentIDs[name].push(object.id)
+                  console.log(nameToContentIDs)
                 }
               }
             }
@@ -375,7 +425,7 @@ var examplesInterface = (function() {
     $('.new-tab').on("click", function() {
         createCollection("untitled")
     });
-    $('.save-collection').on("click", saveCollections);
+    // $('.save-collection').on("click", saveCollections);
     $('.collection-name-input').keydown(function(event){
         if(event.keyCode == 13) {
           $('.name-submit').click();
@@ -396,11 +446,8 @@ var examplesInterface = (function() {
     $('#sortable-main').droppable({
       drop: function(event, ui) {
         if ($(ui.draggable.prop('parentNode')).attr('id') !== "sortable-main") {
-          var activeTab = $('.collections .active').children().attr('class');
-          var activeTabIndex = activeTab[activeTab.length - 1]
-
-          $(ui.draggable).remove();
-          storedBody["sortable"+activeTabIndex] = $("#sortable"+activeTabIndex).html()
+          deleteItem(ui);
+          event.stopPropagation()
         }
       }
     });
