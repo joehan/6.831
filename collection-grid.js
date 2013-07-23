@@ -1,3 +1,6 @@
+var builtExamples = 1
+var modalBuilt
+var selectDict = {}
 var getURLVars = function() {
     var vars = {};
     var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
@@ -240,7 +243,7 @@ var examplesInterface = (function() {
     if ($('.collections .active').val() !== "") {
       $('#collectionModal .modal-body').empty();
       $('#collectionModal .modal-footer').empty();
-      $('#collectionModalLabel').text($('.collections .active').text())
+      $('#collectionModalLabel').text($('.collections .active input').val())
 
       selectionList = $('.active .group li')
 
@@ -287,11 +290,14 @@ var examplesInterface = (function() {
                +  '</div>'
                +'</div>';
 
-    div.append(singleModal);
+    if (modalBuilt ==undefined){
+        div.append(singleModal);
+        modalBuilt=true;
+    }
     
    // create iframe, overlay, and link to modal for each URL
-    // for (i=1;i<URLList.length;i++) {
-      for (i=1;i<5;i++) {
+    for (i=builtExamples; i<URLList.length; i++) {
+       builtExamples+=1
        var link = $('<a data-toggle="modal" data-target="#myModal"></a>')
        var li = $('<li class = "iframe ui-state-default">')
   	 	 var overlay = $('<div class="overlay"></div>')
@@ -465,7 +471,7 @@ var examplesInterface = (function() {
   }
 
   var fillFilterBar = function(){
-      var selectDict={}
+      
       var col = categoryColumns[0];
       for (var key in URLDict){
           for (var j=0;j<URLDict[key].length;j++){
@@ -473,14 +479,9 @@ var examplesInterface = (function() {
               }
               else if (selectDict[URLDict[key][j][col]]==undefined){
                   selectDict[URLDict[key][j][col]] = 1
-              }
-              else{
-                  selectDict[URLDict[key][j][col]] += 1
+                  $('.filter').append('<option>'+URLDict[key][j][col]+'</option>')
               }
           }    
-      }
-      for (key in selectDict){
-          $('.filter').append('<option>'+key+'</option>')
       }
   }
   
@@ -515,6 +516,21 @@ var examplesInterface = (function() {
 
 var JSONdata 
 
+var makeCall = function(){    
+    $.getJSON(JSONURL, function(data) {
+            JSONdata=data
+        }).done(function(){
+                        examplesInterface.fillFilterBar()
+                        getEverything().getURLList();
+    
+                        $('.example-holder').each(function() {
+                            examplesInterface.setupExamples($('#sortable-main'));
+                        });
+                        setTimeout(makeCall(), 15000);
+    
+          })
+}
+
     
 $.getJSON(JSONURL, function(data) {
         JSONdata=data
@@ -525,5 +541,6 @@ $.getJSON(JSONURL, function(data) {
                           examplesInterface.setupInterface($(this));
                       });
                       examplesInterface.fillFilterBar()
+                      makeCall()
                       
       })
