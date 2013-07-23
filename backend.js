@@ -54,6 +54,7 @@ function getEverything(){
     //makeURlDict is used to create the dictionary from which the grid of sites is created. It outputs an associative array, with URLs as the key and the rest of the google docs info as the value.
     var makeURLDict = function(){
         parseData()
+        URLDict={}
         for (var key in items){
             var newKey = addProtocol(items[key][findColumn('URL')])
             if (URLDict[newKey]==undefined){
