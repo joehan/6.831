@@ -16,38 +16,31 @@ var JSONURL = 'https://spreadsheets.google.com/feeds/cells/'+googleKey+'/oD6/pub
 
 // contains functions to set up main collection area and selection pane
 
-// to-do: move larger view of collections to separate tab in main window
-// fix layout of larger collection view
-// show all comments at once
-// maxe delete button an "x" on the tabs themselves.
-// look into parse as a storage thingy.
 var examplesInterface = (function() {
-
+  
+  // Parse key to allow persistent storage
   Parse.initialize("EAZLne6WusMuwh67shifh4saiDh4Y9q5rVYcgPrG", "Spq8SBS6pChLouqFmJY4bDgiRVAHtDh0luJzoMiQ");
 
-  var CollectionData = Parse.Object.extend('collectionData');
+  // initialize Parse objects for storage - CollectionName stores collection names
+  // and CollectionContent stores individual examples
   var CollectionName = Parse.Object.extend('collectionName')
   var CollectionContent = Parse.Object.extend('collectionContent')
-  var collectionData = new CollectionData
-  collectionData.set('source', googleKey)
 
+  // initialize query objects for delete functions
   var itemQuery = new Parse.Query(CollectionContent)
   var collectionQuery = new Parse.Query(CollectionName)
 
-  // variables for storage of collections
-  var storedNamesList = [];
-  var storedBody = {};
+  // variables for storage of Parse IDs - used for delete functions
   var URLtoID = {};
   var nameToID = {};
   var nameToContentIDs = {};
 
   // arbitrary max number of collections, changable
+  // TO DO - figure out what to do with this now that multiple users can edit
   var maxCollections = 5;
 
   // holds functions and variables accessible outside of the module
 	var exports = {};
-
-  // createCollection and deleteCollection are used for the selection pane
 
   // makes new collection in a tabbed list and connects it to main group
   var createCollection = function(name) {
@@ -63,22 +56,18 @@ var examplesInterface = (function() {
         count += 1
       }
 
-      storedNamesList.push(name);
-
-      // resets collection name input area
-      $('.collection-alert').css('visibility', 'hidden')
-      $('.collection-name-input').val("")
-      $('.collection-name').css("visibility", "hidden");
-
       // HTML skeleton for new collection body
       var newTab = $('<li><a class=collection'+collectionNumber+' href=#collection'+collectionNumber+' data-toggle="tab"><input class="tab-name-input" type="text" placeholder="'+name+'" style="border: none; box-shadow: none; background-color: transparent;"></input><button class="btn delete">×</button></a></li)');
       var newTabBody = $('<div id=collection'+collectionNumber+' class="tab-pane"></div>')
       var newSortable = $('<ul id="sortable'+collectionNumber+'" class="connected'+collectionNumber+' group"></ul>')
       newTabBody.append(newSortable);
 
+      // append HTML skeleton to collection holder
       $('.collections').append(newTab);
       $('.collections-content').append(newTabBody);
 
+      // if tab is created from storage, give it a class with its name to make it more easily accessible
+      // to add items to.
       if (name !== "untitled") {
         $('.collection'+collectionNumber+' .tab-name-input').val(name);
         var nameClass = name.replace(/\s+/g,"");
@@ -87,26 +76,24 @@ var examplesInterface = (function() {
         $('.collection'+collectionNumber+' input').focus();
       }
 
+      // event handler for name input box, hitting enter saves the name to storage
       $('.collection'+collectionNumber+' .tab-name-input').keydown(function(event){
         if(event.keyCode == 13) {
           newName = $('.collection'+collectionNumber+' .tab-name-input').val();
           $('.collection'+collectionNumber+' .tab-name-input').blur();
-          storedNamesList.splice(collectionNumber-count, 1, newName);
           saveName(newName);
         }
       });
 
+      // clicking the X button deletes the collection
+      // TO DO - add confirmation popup
       $('.collection'+collectionNumber+' .delete').on('click', function() {
           deleteCollection(this);
       })
 
       // bind drop function to any iframe dropped into the collection, needed because onclick handlers
       // unbind when the object is moved
-      $('#sortable'+collectionNumber).sortable({
-        stop: function(event, ui) {
-          storedBody["sortable"+collectionNumber] = $("#sortable"+collectionNumber).html()
-        }
-        }).disableSelection().droppable({
+      $('#sortable'+collectionNumber).sortable().disableSelection().droppable({
         drop: function(event, ui) {
           $(".overlay").on("click", showSingleModal)
           var collection = $('.collection'+collectionNumber+' input').val().replace(/\s+/g,"")
@@ -123,6 +110,7 @@ var examplesInterface = (function() {
     }
   }
 
+  // saves given name to Parse list of collection names
   var saveName = function(name) {
     var savedName = new CollectionName;
     savedName.set('source', googleKey)
@@ -130,20 +118,27 @@ var examplesInterface = (function() {
     savedName.save(null)
   }
 
+  // saves a single example to Parse, collection is the collection the content belongs to, content is
+  // the HTML of the example.
   var saveContent = function(collection, content) {
     var savedContent = new CollectionContent
     savedContent.set('source', googleKey)
+    
     var data = {}
     data[collection] = content
     savedContent.set('data', data)
     savedContent.save(null)
   }
 
+  // deletes a single item out of Parse
   var deleteItem = function(ui) {
-    var activeTab = $('.collections .active').children().attr('class');
-    var activeTabIndex = activeTab[activeTab.length - 1]
+    // URL of deleted example
     var URL = $(ui.draggable[0]).find('iframe').prop('src')
+
+    // name of collection that the example belonged to
     var collection = $('.collections .active input').val()
+
+    // delete all examples in the collection that have that URL
     for (var i = 0; i < URLtoID[URL].length; i++) {
       var ID = URLtoID[URL][i]
       console.log(ID)
@@ -154,22 +149,12 @@ var examplesInterface = (function() {
             collectionContent.destroy()
           }
         }
-        })
+      })
     }
-
+    // delete the example DOM element
     $(ui.draggable).remove();
-    storedBody["sortable"+activeTabIndex] = $("#sortable"+activeTabIndex).html()
-  }
 
-  // // puts content of collections onto Parse
-  // var saveCollections = function() {
-  //   collectionData.save(null, {
-  //     success: function() {
-  //       collectionData.set('collection', storedNamesList)
-  //       collectionData.set('collectionBody', storedBody)
-  //     }
-  //   })
-  // }
+  }
 
   // deletes current collection and returns items to main pane. 
   var deleteCollection = function(button) {
@@ -186,10 +171,7 @@ var examplesInterface = (function() {
     $($("."+collection).parent()).remove();
     $("."+collection).remove();
 
-    // shift list of all tabs' content down by one to account for a deletion in the middle of the list of tabs
-    for (var i = collectionIndex; i < maxCollections; i++) {
-      storedBody["sortable"+(i)] = storedBody["sortable"+parseInt(i+1)];
-    }
+    // delete collection and all associated content out of Parse
     for (var i = 0; i < nameToContentIDs[collectionName].length; i++) {
       itemQuery.get(nameToContentIDs[collectionName][i], {
         success: function(item) {
@@ -202,9 +184,6 @@ var examplesInterface = (function() {
         collectionName.destroy()
       }
     })
-
-    // remove deleted collection name from storedNamesList
-    storedNamesList.splice(collectionIndex - 1, 1);
   }
 
   // takes two arguments to allow for more than one comments box to appear
@@ -311,22 +290,21 @@ var examplesInterface = (function() {
     div.append(singleModal);
     
    // create iframe, overlay, and link to modal for each URL
-   // for (i=1;i<URLList.length;i++) {
-  for (i=1;i<5;i++) {
-     var link = $('<a data-toggle="modal" data-target="#myModal"></a>')
-     var li = $('<li class = "iframe ui-state-default">')
-	 	 var overlay = $('<div class="overlay"></div>')
-	 	 var iframe = $('<iframe class="body-iframe" sandbox="" width="1000" height="750" src='+URLList[i]+' style="-webkit-transform:scale(0.25);-moz-transform-scale(0.25);">')
+    for (i=1;i<URLList.length;i++) {
+       var link = $('<a data-toggle="modal" data-target="#myModal"></a>')
+       var li = $('<li class = "iframe ui-state-default">')
+  	 	 var overlay = $('<div class="overlay"></div>')
+  	 	 var iframe = $('<iframe class="body-iframe" sandbox="" width="1000" height="750" src='+URLList[i]+' style="-webkit-transform:scale(0.25);-moz-transform-scale(0.25);">')
 
-	 	 link.append(overlay)
-     overlay.on("click", showSingleModal)
-     li.append(link, iframe)
-	 	 div.append(li)
+  	 	 link.append(overlay)
+       overlay.on("click", showSingleModal)
+       li.append(link, iframe)
+  	 	 div.append(li)
 
-     $('.iframe').draggable({ 
-       helper: "clone",
-       connectToSortable: '.group'
-     });
+       $('.iframe').draggable({ 
+         helper: "clone",
+         connectToSortable: '.group'
+       });
 
 	 }
 	}
@@ -356,9 +334,11 @@ var examplesInterface = (function() {
 
     div.append(collectionModal);
 
+    // code to pull existing collections from Parse
     var nameQuery = new Parse.Query(CollectionName);
     var namesList = []
 
+    // find all collections connected to this specific google doc
     nameQuery.equalTo('source', googleKey);
     nameQuery.find({
       success: function(nameResults) {
@@ -366,11 +346,13 @@ var examplesInterface = (function() {
         var contentQuery = new Parse.Query(CollectionContent);
         var content = {}
 
+        // find all content connected to this specific google doc
         contentQuery.equalTo('source', googleKey);
         contentQuery.find({
 
           success: function(contentResults) {
             
+            // create a list of collection names and begin to store Parse IDs
             for (var i = 0; i < nameResults.length; i++) {
               var object = nameResults[i];
               if (object.get('name') !== undefined && namesList.indexOf(object.get('name') == -1)) {
@@ -380,10 +362,12 @@ var examplesInterface = (function() {
               }
             }
 
+            // create a collection for each name in namesList
             for (var i = namesList.length-1; i >= 0; i--) {
                 createCollection(namesList[i]);
             }
 
+            // code to fill content
             for (var i = 0; i < contentResults.length; i++) {
               
               var object = contentResults[i]
@@ -408,6 +392,8 @@ var examplesInterface = (function() {
                 }
               }
             }
+
+            // insert content into collections
             for (var collection in content) {
               $('.'+collection).html(content[collection]);
               $('li').css('display', 'inline');
