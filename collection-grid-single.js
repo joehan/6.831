@@ -11,8 +11,8 @@ var getURLVars = function() {
 var googleKey = getURLVars()['googleKey']
 var category = getURLVars()['category'].split(',')
 var displayed = getURLVars()['displayed'].split(',')
-displayedColumns = displayed
-categoryColumns = category
+displayedColumns = getEverything().letterArrayToNumber(displayed)
+categoryColumns = getEverything().letterArrayToNumber(category)
 
 
 var JSONURL = 'https://spreadsheets.google.com/feeds/cells/'+googleKey+'/oD6/public/basic?alt=json'
@@ -456,7 +456,7 @@ $.getJSON(JSONURL, function(data) {
                       $('.example-holder').each(function() {
 		                      examplesInterface.setupInterface($(this));
 	                    });
-                      
+                      examplesInterface.fillFilterBar()
 
       })
 
