@@ -88,6 +88,10 @@ var examplesInterface = (function() {
           newName = $('.collection'+collectionNumber+' .tab-name-input').val();
           $('.collection'+collectionNumber+' .tab-name-input').blur();
           saveName(newName);
+          $('.active').removeClass('active');
+          $('.collection'+collectionNumber).parent().addClass('active');
+          $('#collection'+collectionNumber).addClass('active');
+
         }
       });
 
@@ -97,10 +101,17 @@ var examplesInterface = (function() {
           deleteCollection(this);
       })
 
+      if (count == 1) {
+        $($('.collections').children()[1]).addClass('active')
+        $('#collection'+collectionNumber).addClass('active')
+        count += 1
+      }
+
       // bind drop function to any iframe dropped into the collection, needed because onclick handlers
       // unbind when the object is moved
       $('#sortable'+collectionNumber).sortable().disableSelection().droppable({
         drop: function(event, ui) {
+          console.log('dropped!')
           $(".overlay").on("click", showSingleModal)
           var collection = $('.collection'+collectionNumber+' input').val().replace(/\s+/g,"")
           var tempcontent = $(ui.draggable[0]).clone()
@@ -143,15 +154,17 @@ var examplesInterface = (function() {
     var collection = $('.collections .active input').val()
 
     // delete all examples in the collection that have that URL
-    for (var i = 0; i < URLtoID[URL].length; i++) {
-      var ID = URLtoID[URL][i]
-      itemQuery.get(ID, {
-        success: function(collectionContent) {
-          if (collection == Object.keys(collectionContent.get('data'))[0]) {
-            collectionContent.destroy()
+    if (URLtoID !== undefined) {
+      for (var i = 0; i < URLtoID[URL].length; i++) {
+        var ID = URLtoID[URL][i]
+        itemQuery.get(ID, {
+          success: function(collectionContent) {
+            if (collection == Object.keys(collectionContent.get('data'))[0]) {
+              collectionContent.destroy()
+            }
           }
-        }
-      })
+        })
+      }
     }
     // delete the example DOM element
     $(ui.draggable).remove();
@@ -412,11 +425,10 @@ var examplesInterface = (function() {
   var setupSelectionPane = function(div) {
 
     // html elements for selection pane skeleton
-    var buttons = $('<button class="btn save-collection">Save</button></div>');
     var collectionTabs = $('<div class="tabbable collection-tabs"><ul class="nav nav-tabs collections"><li><a href="#"><i class="new-tab icon-plus"></i></a></li></ul><div class="collections-content tab-content"></div></div>');
     var showLarger = $('<div><button class="btn show-larger" data-toggle="modal" data-target="#collectionModal">Show Larger</button></div>');
 
-    div.append(buttons, showLarger, collectionTabs);
+    div.append(showLarger, collectionTabs);
 
     // modal for showing collections
     var collectionModal = '<div id="collectionModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'
