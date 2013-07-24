@@ -5,10 +5,11 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.js"></script> 
 <script src="js/bootstrap.min.js"></script> 
 <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+<script src="http://www.parsecdn.com/js/parse-1.2.8.min.js"></script>
 <script type="text/javascript" src="backend.js"></script>
 <script type="text/javascript" src="collection-demo.js"></script>
 <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
-<link href="collection-grid.css" rel="stylesheet"></link>  
+<link href="collection-grid.css" rel="stylesheet">  
 </head>
 <body style="padding-top: 40px;">
 	
@@ -17,11 +18,17 @@
 		
 		<div class="navbar navbar-fixed-top navbar-inverse">
 			<div class="navbar-inner">
-				<a class="brand" href="#">Title</a>
+				<a class="brand title" href="#">Website Design Viewer</a>
 			    <ul class="nav">
-			      <li class="active"><a href="#">Home</a></li>
-			      <li><a href="#">Link</a></li>
-			      <li><a href="#">Link</a></li>
+			         <li class="active"><a href="#">Filter</a></li>
+                    <li>
+                        <select class='filter'>
+                         <option>All</option>
+                     </select>
+                    </li>
+                    <li>
+                        <button class='btn filterButton' onClick='examplesInterface.handleFilterBar()'>GO!</button>
+                    </li>
 			    </ul>
 			</div>
 		</div>

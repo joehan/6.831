@@ -46,7 +46,7 @@ var examplesInterface = (function() {
   var maxCollections = 5;
 
   // holds functions and variables accessible outside of the module
-	var exports = {};
+  var exports = {};
 
   // makes new collection in a tabbed list and connects it to main group
   var createCollection = function(name) {
@@ -115,10 +115,11 @@ var examplesInterface = (function() {
           $(".overlay").on("click", showSingleModal)
           var collection = $('.collection'+collectionNumber+' input').val().replace(/\s+/g,"")
           var tempcontent = $(ui.draggable[0]).clone()
+          var URL = $(ui.draggable[0]).find('iframe').prop("src")
           var tempparent = $('<div class = "temp"></div>')
           tempparent.append(tempcontent)
           var content = tempparent.html()
-          saveContent(collection, content);
+          saveContent(collection, content, URL);
           $('.temp').remove()
         }
         });
@@ -135,14 +136,23 @@ var examplesInterface = (function() {
 
   // saves a single example to Parse, collection is the collection the content belongs to, content is
   // the HTML of the example.
-  var saveContent = function(collection, content) {
+  var saveContent = function(collection, content, URL) {
     var savedContent = new CollectionContent
     savedContent.set('source', googleKey)
     
     var data = {}
     data[collection] = content
     savedContent.set('data', data)
-    savedContent.save(null)
+    savedContent.save(null, {
+      success: function(savedContent) {
+        var ID = savedContent.id;
+        if (URLtoID[URL] !== undefined) {
+          URLtoID[URL].push(ID);
+        } else {
+          URLtoID[URL] = [ID];
+        }
+      }
+    })
   }
 
   // deletes a single item out of Parse
@@ -154,7 +164,7 @@ var examplesInterface = (function() {
     var collection = $('.collections .active input').val()
 
     // delete all examples in the collection that have that URL
-    if (URLtoID !== undefined) {
+    if (URLtoID[URL] !== undefined) {
       for (var i = 0; i < URLtoID[URL].length; i++) {
         var ID = URLtoID[URL][i]
         itemQuery.get(ID, {
@@ -289,7 +299,7 @@ var examplesInterface = (function() {
 
 
   ///////// setup functions
-	var setupExamples = function(div) {
+  var setupExamples = function(div) {
  
     // make modal to view larger images of examples
     var singleModal = '<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'
@@ -313,22 +323,22 @@ var examplesInterface = (function() {
        builtExamples+=1
        var link = $('<a data-toggle="modal" data-target="#myModal"></a>')
        var li = $('<li class = "iframe ui-state-default">')
-  	 	 var overlay = $('<div class="overlay"></div>')
-  	 	 var iframe = $('<iframe class="body-iframe" sandbox="" width="1000" height="750" src='+URLList[i]+' style="-webkit-transform:scale(0.25);-moz-transform-scale(0.25);">')
+       var overlay = $('<div class="overlay"></div>')
+       var iframe = $('<iframe class="body-iframe" sandbox="" width="1000" height="750" src='+URLList[i]+' style="-webkit-transform:scale(0.25);-moz-transform-scale(0.25);">')
 
-  	 	 link.append(overlay)
+       link.append(overlay)
        overlay.on("click", showSingleModal)
        li.append(link, iframe)
-  	 	 div.append(li)
+       div.append(li)
 
        $('.iframe').draggable({ 
          helper: "clone",
          connectToSortable: '.group'
        });
 
-	 }
-	}
-	exports.setupExamples = setupExamples;
+   }
+  }
+  exports.setupExamples = setupExamples;
 
   var buildCollectionsFromParse = function() {
     // code to pull existing collections from Parse

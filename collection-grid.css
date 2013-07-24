@@ -81,8 +81,9 @@
 }
 
 #sortable-main {
-	/*overflow-x: hidden;
-	overflow-y: scroll;*/
+	height: 700px;
+	overflow-x: hidden;
+	overflow-y: scroll;
 }
 
 .description {
@@ -92,8 +93,7 @@
 .main-grouping {
 	height: 85%;
 	border: 5px solid black;
-	overflow-x: hidden;
-	overflow-y: scroll;
+	overflow: scroll;
 }
 
 .select-grouping {
@@ -181,7 +181,7 @@ body .delete {
 	overflow: hidden;
 }
 
-.filter{
+.filter {
 	position: relative;
 	top: 5px;
 }
