@@ -39,7 +39,7 @@ In the body of your HTML file where you want the module to be, include the follo
 	<div class="row-fluid example-holder"></div>
     
 ###Google Spreadsheet Requirements
-In your Google spreadsheet, there must be a column title URL. This is where the viewer pulls the list of URLs from. Additionally, the Google spreadsheet must be published to the web. The viewer uses the JSOn feed that Google publishes, which will not exist unless the document is published. It is recommended that your document is set to auto-publish, so that you can view updates by simply refreshing your page.
+In your Google spreadsheet, there must be a column titled URL. This is where the viewer pulls the list of URLs from. Additionally, the Google spreadsheet must be published to the web. The viewer uses the JSON feed that Google publishes, which will not exist unless the document is published. It is recommended that your document is set to auto-publish, so that you can view updates dynamically.
 
 ######Using frontend.html to choose a Google Doc
-frontend.html asks for two inputs from the user: a Google doc URL and the letters of the columns you wish to display as comments. The letters should be split by commas, without spaces. After you hit submit, frontend.html will give you a string to append to the end of your URL. 
+If you navigate to collection-grid.html without URL variables, you will be redirected to frontend.html. This file asks for a Google docs URL, a list of the letters of the columns that want to display as commens on each website, and the column you wish to use for filtering. Once these are input and you hit submit, you will be redirected to a viewer with the info from your spreadsheet.
