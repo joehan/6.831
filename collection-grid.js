@@ -410,7 +410,11 @@ var examplesInterface = (function() {
                     }
                     URLtoID[URL] = [object.id]
                   }
-                  nameToContentIDs[name].push(object.id)
+                  if (nameToContentIDs[name] == undefined) {
+                    nameToContentIDs[name] = [object.id]
+                  } else {
+                    nameToContentIDs[name].push(object.id)
+                  }
                 }
               }
             }

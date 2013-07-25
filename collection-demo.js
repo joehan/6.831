@@ -1,6 +1,6 @@
 var builtExamples = 1
 var modalBuilt
-displayedColumns = ["f", "g", "h", "i"]
+displayedColumns = [5, 6, 7, 8]
 categoryColumns = ["k"]
 
 // contains functions to set up main collection area and selection pane
@@ -393,7 +393,11 @@ var examplesInterface = (function() {
                     }
                     URLtoID[URL] = [object.id]
                   }
-                  nameToContentIDs[name].push(object.id)
+                  if (nameToContentIDs[name] == undefined) {
+                    nameToContentIDs[name] = [object.id]
+                  } else {
+                    nameToContentIDs[name].push(object.id)
+                  }
                 }
               }
             }

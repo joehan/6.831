@@ -74,14 +74,14 @@
 }
 
 .group {
-	height: 600px;
+	height: 100%;
 	overflow-x: hidden;
 	overflow-y: scroll;
 	margin-left: 0px;
 }
 
 #sortable-main {
-	height: 700px;
+	height: 100%;
 	overflow-x: hidden;
 	overflow-y: scroll;
 }
