@@ -14,8 +14,11 @@ var getURLVars = function() {
 var googleKey = getURLVars()['googleKey']
 var category = getURLVars()['category'].split(',')
 var displayed = getURLVars()['displayed'].split(',')
+var URLCol = getURLVars()["URLCol"].split(",")
 displayedColumns = getEverything().letterArrayToNumber(displayed)
 categoryColumns = getEverything().letterArrayToNumber(category)
+URLColumn = getEverything().letterArrayToNumber(URLCol)
+console.log(displayedColumns, categoryColumns, URLColumn)
 
 
 var JSONURL = 'https://spreadsheets.google.com/feeds/cells/'+googleKey+'/oD6/public/basic?alt=json'
@@ -299,7 +302,7 @@ var examplesInterface = (function() {
 
 
   ///////// setup functions
-  var setupExamples = function(div) {
+  var setupExamples = function(div, galleryURLList) {
  
     // make modal to view larger images of examples
     var singleModal = '<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'
@@ -319,12 +322,13 @@ var examplesInterface = (function() {
     }
     
    // create iframe, overlay, and link to modal for each URL
-    for (i=builtExamples; i<URLList.length; i++) {
+   console.log(galleryURLList)
+    for (i=1; i<galleryURLList.length; i++) {
        builtExamples+=1
        var link = $('<a data-toggle="modal" data-target="#myModal"></a>')
        var li = $('<li class = "iframe ui-state-default">')
        var overlay = $('<div class="overlay"></div>')
-       var iframe = $('<iframe class="body-iframe" sandbox="" width="1000" height="750" src='+URLList[i]+' style="-webkit-transform:scale(0.25);-moz-transform-scale(0.25);">')
+       var iframe = $('<iframe class="body-iframe" sandbox="" width="1000" height="750" src='+galleryURLList[i]+' style="-webkit-transform:scale(0.25);-moz-transform-scale(0.25);">')
 
        link.append(overlay)
        overlay.on("click", showSingleModal)
@@ -474,14 +478,75 @@ var examplesInterface = (function() {
   }
   exports.setupSelectionPane = setupSelectionPane;
 
+  var addGalleryInterface = function() {
+    $(".connected-main").children().remove();
+    var nameInput = $('<div>Gallery Name <input type="text" class="gallery-name"></input></div>')
+    var keyInput = $('<div>Published Google Doc URL <input type="text" class="key"></input></div>')
+    var URLColInput = $('<div>URL Column <input type="text" class="url"></input>Input the letter of the column that contains URLs.</div>')
+    var categoryColInput = $('<div>Filter Column <input type="text" class="category"></input>Input the letter of the column that you wish to filter by.</div>')
+    var displayedColInput = $('<div>Comment Columns <input type="text" class="displayed"></input>Which columns do you want to be viewable as comments? Input letters, split by commas with no spaces</div>')
+    var submitButton = $('<button class="btn submit gallery-create">Create</button>')
+    
+    $('.connected-main').append(keyInput)
+        .append(nameInput)
+        .append(URLColInput)
+        .append(categoryColInput)
+        .append(displayedColInput)
+        .append(submitButton)
+
+    $('.gallery-create').on("click", createGallery)
+  }
+
+  //Working here.....next to do: be able to use given URL to bring up examples
+  var createGallery = function() {
+    var googleURL = $('.key').val()
+
+    if(googleURL !== undefined) {
+      var URLParts = googleURL.split("key=")[1]
+      var googleKey= URLParts.split("#")[0].split('&')[0]
+      console.log(googleKey)
+      
+      var galleryName = $('.gallery-name').val()
+      var category = $('.category').val()
+      var displayed = $('.displayed').val()
+      var URLCol = $('.url').val()
+      var dataURL = 'https://spreadsheets.google.com/feeds/cells/'+googleKey+'/oD6/public/basic?alt=json'
+
+      $.getJSON(dataURL, function(data) {
+        JSONdata=data
+        }).done(function(){
+          if (galleryName !== undefined && URLCol !== undefined){
+            var galleryIndex = $('.galleries-holder').children().length
+            $('.galleries-holder').append('<li class=gallery'+galleryIndex+'><a href="#">'+galleryName+'</a></li>')
+
+            var URLQuery = '?googleKey='+googleKey+'&sheet=od6&category='+category+'&displayed='+displayed+'&URLCol='+URLCol+'&end=true'
+
+            var galleryURLList = getEverything().getSpecifiedURLList(URLCol)
+            console.log(galleryIndex)
+            console.log(galleryURLList)
+
+            $('.gallery'+galleryIndex+' a').on('click', function(){
+              $('#sortable-main').children().remove()
+              setupExamples($('#sortable-main'), galleryURLList)
+            })
+          }          
+      })
+    }
+  }
+
   // set up both main and selection panes within a fluid row
   var setupInterface = function(div) {
 
-    var main = $('<div class="span9 main-grouping"><ul id="sortable-main" class="connected-main"></ul></div>');
-    var select = $('<div class="span3 select-grouping"></div>');
+    var galleries = $('<div class="span2 galleries"><div class="well sidebar-nav"><span class="gallery-label">Galleries</span><ul class="galleries-holder"></ul></div></div>')
+    var addNew = $('<button class="btn addNew">Add new gallery</button>')
+    var main = $('<div class="span8 main-grouping"><div class="space"></div><ul id="sortable-main" class="connected-main"></ul></div>');
+    var select = $('<div class="span2 select-grouping"></div>');
 
-    div.append(main, select);
+    div.append(galleries, main, select);
+    $(".galleries .sidebar-nav").append(addNew);
+    $('.addNew').on("click", addGalleryInterface)
 
+    // iframes dragged back to the main viewing pane will be deleted
     $('#sortable-main').droppable({
       drop: function(event, ui) {
         if ($(ui.draggable.prop('parentNode')).attr('id') !== "sortable-main") {
@@ -492,7 +557,7 @@ var examplesInterface = (function() {
     });
 
     // add examples to main pane and functionality to selection pane
-    setupExamples($('#sortable-main'));
+    setupExamples($('#sortable-main'), URLList);
     setupSelectionPane($('.select-grouping'));
   }
 
@@ -557,7 +622,7 @@ var makeCall = function(){
           })
 }
 
-    
+console.log(JSONURL)
 $.getJSON(JSONURL, function(data) {
         JSONdata=data
     }).done(function(){
@@ -570,3 +635,5 @@ $.getJSON(JSONURL, function(data) {
                       makeCall()
                       
       })
+
+
